@@ -4,7 +4,7 @@ import (
 	"context"
 	"log"
 
-	"github.com/terloo/xiaochen/wxbot"
+	"github.com/terloo/xiaochen/notify/period"
 )
 
 type CommandHandler struct {
@@ -21,7 +21,8 @@ func (c *CommandHandler) Support(msg FormattedMessage) bool {
 
 func (c *CommandHandler) Handle(ctx context.Context, msg FormattedMessage) error {
 	log.Printf("command: %s", msg.Content)
-	wxbot.ReportWeather(ctx, msg.Chat)
+	weatherNotifier := period.WeatherNotifier{}
+	weatherNotifier.Notify(ctx, msg.Chat)
 	return nil
 }
 

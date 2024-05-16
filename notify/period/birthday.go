@@ -1,4 +1,4 @@
-package notify
+package period
 
 import (
 	"context"
@@ -9,7 +9,9 @@ import (
 
 	"github.com/Lofanmi/chinese-calendar-golang/calendar"
 	"github.com/Lofanmi/chinese-calendar-golang/lunar"
+
 	"github.com/terloo/xiaochen/family"
+	"github.com/terloo/xiaochen/notify"
 	"github.com/terloo/xiaochen/thirdparty/apispace"
 	"github.com/terloo/xiaochen/wxbot"
 )
@@ -17,14 +19,14 @@ import (
 type BirthdayNotifier struct {
 }
 
-var _ Notifier = (*BirthdayNotifier)(nil)
+var _ notify.Notifier = (*BirthdayNotifier)(nil)
 
 type BirthdayPair struct {
 	Key   family.People
 	Value int
 }
 
-func (b *BirthdayNotifier) Notify(ctx context.Context, wxid string) {
+func (b *BirthdayNotifier) Notify(ctx context.Context, notified ...string) {
 	msg := ""
 	var todayBirth []family.People
 
@@ -66,7 +68,10 @@ func (b *BirthdayNotifier) Notify(ctx context.Context, wxid string) {
 	if msg == "" && len(todayBirth) == 0 {
 		return
 	}
-	_ = wxbot.SendMsg(ctx, wxid, msg)
+
+	for _, wxid := range notified {
+		_ = wxbot.SendMsg(ctx, wxid, msg)
+	}
 
 	// 通知生日花语
 	for _, p := range todayBirth {
@@ -83,7 +88,9 @@ func (b *BirthdayNotifier) Notify(ctx context.Context, wxid string) {
 		flowerMsg += fmt.Sprintln(flower.Birthstone)
 		flowerMsg += fmt.Sprintln(flower.BirthstoneContent)
 
-		_ = wxbot.SendMsg(ctx, wxid, flowerMsg)
+		for _, wxid := range notified {
+			_ = wxbot.SendMsg(ctx, wxid, flowerMsg)
+		}
 	}
 }
 

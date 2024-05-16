@@ -71,11 +71,13 @@ func SendMsg(ctx context.Context, wxid string, msg string) error {
 	}
 	b, err := client.HttpPost(ctx, host+"sendtxtmsg", nil, nil, wxmsg)
 	if err != nil {
+		log.Println("send wxmsg err:", err)
 		return err
 	}
 	result := &BaseBody{}
 	err = json.Unmarshal(b, result)
 	if err != nil {
+		log.Println("send wxmsg err:", err)
 		return err
 	}
 	return nil

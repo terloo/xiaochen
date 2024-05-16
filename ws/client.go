@@ -2,10 +2,9 @@ package ws
 
 import (
 	"context"
-	"encoding/json"
+	"github.com/gorilla/websocket"
 	"log"
 
-	"github.com/gorilla/websocket"
 	"github.com/terloo/xiaochen/handler"
 	"github.com/terloo/xiaochen/wxbot"
 )
@@ -17,33 +16,40 @@ func StartReceiveMessage(ctx context.Context) {
 		log.Fatal(err)
 	}
 
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		default:
-		}
+	isClosed := false
+	go func() {
+		<-ctx.Done()
+		log.Println("close websocket connection...")
+		_ = ws.Close()
+		isClosed = true
+	}()
 
-		defer func() {
-			if r := recover(); r != nil {
-				log.Println("接收消息panic")
-			}
-		}()
-		message := ReadMessage(ws)
-		handler.HandleMessage(ctx, message)
+	defer func() {
+		if r := recover(); r != nil {
+			log.Println("接收消息panic: ", r)
+		}
+	}()
+
+	for {
+		if isClosed {
+			break
+		}
+		message, err := ReadMessage(ws)
+		if err != nil {
+			// TODO 判断错误类型，如果连接已关闭则需要重新连接
+			continue
+		}
+		handler.HandleMessage(ctx, *message)
 	}
+
 }
 
-func ReadMessage(ws *websocket.Conn) wxbot.WxGeneralMsg {
-	_, data, err := ws.ReadMessage()
-	if err != nil {
-		log.Panicln(err)
-	}
+func ReadMessage(ws *websocket.Conn) (*wxbot.WxGeneralMsg, error) {
 	receiveMsg := &wxbot.WxGeneralMsg{}
-	err = json.Unmarshal(data, receiveMsg)
+	err := ws.ReadJSON(receiveMsg)
 	if err != nil {
-		log.Panicln(err)
+		return nil, err
 	}
-	log.Println("receive: ", string(data))
-	return *receiveMsg
+	log.Println("receive: ", receiveMsg)
+	return receiveMsg, nil
 }

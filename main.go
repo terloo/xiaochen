@@ -5,11 +5,10 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 
-	"github.com/robfig/cron/v3"
-	"github.com/terloo/xiaochen/family"
-	"github.com/terloo/xiaochen/notify"
+	"github.com/terloo/xiaochen/notify/period"
 	"github.com/terloo/xiaochen/ws"
 	"github.com/terloo/xiaochen/wxbot"
 )
@@ -20,8 +19,8 @@ func init() {
 
 func main() {
 
+	wg := sync.WaitGroup{}
 	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
 
 	// 校验登录状态
 	wxid, err := wxbot.GetWxid(ctx)
@@ -29,41 +28,26 @@ func main() {
 		log.Fatal(err)
 	}
 
-	c := cron.New(
-		cron.WithSeconds(),
-		cron.WithLogger(cron.VerbosePrintfLogger(log.Default())),
-		cron.WithChain(cron.Recover(cron.DefaultLogger)),
-	)
-	defer func() {
-		stop := c.Stop()
-		<-stop.Done()
+	go func() {
+		wg.Add(1)
+		period.StartPeriodNotifier(ctx)
+		wg.Done()
 	}()
-
-	c.AddFunc("0 0 */2 * * *", func() {
-		wxbot.KeepAlive(ctx)
-	})
-	c.AddFunc("0 0 7 * * *", func() {
-		wxbot.ReportWeather(ctx, family.MomWxid)
-		wxbot.ReportWeather(ctx, family.FamilyChatroomWxid)
-	})
-	c.AddFunc("0 0 16 * * *", func() {
-		wxbot.ReportTicker(ctx, family.MomWxid, []string{"600959"})
-	})
-	c.AddFunc("0 0 11 * * *", func() {
-		for _, notifier := range notify.Notifiers {
-			notifier.Notify(ctx, family.FamilyChatroomWxid)
-		}
-	})
-
-	go c.Start()
-	go ws.StartReceiveMessage(ctx)
+	go func() {
+		wg.Add(1)
+		ws.StartReceiveMessage(ctx)
+		wg.Done()
+	}()
 
 	sigCh := make(chan os.Signal, 1)
 	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
 	<-sigCh
+	cancel()
+	log.Println("Waiting for task exit...")
+	wg.Wait()
 }
 
 func initLogger() {
-	log.SetFlags(log.LstdFlags | log.Lshortfile)
-	log.SetPrefix("[xiaochen]")
+	log.SetFlags(log.LstdFlags | log.Llongfile | log.Lmicroseconds)
+	log.SetPrefix("[xiaochen] ")
 }

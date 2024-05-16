@@ -1,11 +1,9 @@
 package notify
 
-import "context"
+import (
+	"context"
+)
 
 type Notifier interface {
-	Notify(ctx context.Context, wxid string)
-}
-
-var Notifiers = []Notifier{
-	&BirthdayNotifier{},
+	Notify(ctx context.Context, notified ...string)
 }
