@@ -2,9 +2,10 @@ package period
 
 import (
 	"context"
-	"github.com/robfig/cron/v3"
 	"log"
 	"time"
+
+	"github.com/robfig/cron/v3"
 
 	"github.com/terloo/xiaochen/family"
 	"github.com/terloo/xiaochen/wxbot"
@@ -44,6 +45,14 @@ func StartPeriodNotifier(ctx context.Context) {
 		}
 		tickerNotifier.Notify(_ctx, family.MomWxid)
 	})
+
+	c.AddFunc("0 0 8 * * *", func() {
+		_ctx, cancelFunc := context.WithTimeout(ctx, 10*time.Second)
+		defer cancelFunc()
+		calendarNotifier := CalendarNotifier{}
+		calendarNotifier.Notify(_ctx, family.FamilyChatroomWxid)
+	})
+
 
 	c.Start()
 	<-ctx.Done()
