@@ -9,6 +9,7 @@ import (
 
 	"github.com/Lofanmi/chinese-calendar-golang/calendar"
 	"github.com/Lofanmi/chinese-calendar-golang/lunar"
+	"github.com/terloo/xiaochen/util"
 
 	"github.com/terloo/xiaochen/family"
 	"github.com/terloo/xiaochen/notify"
@@ -69,9 +70,7 @@ func (b *BirthdayNotifier) Notify(ctx context.Context, notified ...string) {
 		return
 	}
 
-	for _, wxid := range notified {
-		_ = wxbot.SendMsg(ctx, wxid, msg)
-	}
+	_ = wxbot.SendMsg(ctx, msg, notified...)
 
 	// 通知生日花语
 	for _, p := range todayBirth {
@@ -88,9 +87,7 @@ func (b *BirthdayNotifier) Notify(ctx context.Context, notified ...string) {
 		flowerMsg += fmt.Sprintln(flower.Birthstone)
 		flowerMsg += fmt.Sprintln(flower.BirthstoneContent)
 
-		for _, wxid := range notified {
-			_ = wxbot.SendMsg(ctx, wxid, flowerMsg)
-		}
+		_ = wxbot.SendMsg(ctx, flowerMsg, notified...)
 	}
 }
 
@@ -107,8 +104,7 @@ func getRemainingDay(p family.People) int {
 	if p.Birthday.Date == "" {
 		return -1
 	}
-	timeFormat := "2006-01-02"
-	birthDay, err := time.ParseInLocation(timeFormat, p.Birthday.Date, time.Local)
+	birthDay, err := time.ParseInLocation(util.DateLayout, p.Birthday.Date, time.Local)
 	if err != nil {
 		log.Printf("计算生日(%s)剩余时间错误 %s", p.Birthday.Date, err.Error())
 		return -1

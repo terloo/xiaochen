@@ -62,23 +62,25 @@ func GetChatroom(ctx context.Context, wxid string) (*ChatRoom, error) {
 	return chatroom, nil
 }
 
-func SendMsg(ctx context.Context, wxid string, msg string) error {
-	msg = strings.TrimSpace(msg)
-	wxmsg := &WxMsg{
-		Wxid:    wxid,
-		Content: msg,
-		Atlist:  make([]string, 0),
-	}
-	b, err := client.HttpPost(ctx, host+"sendtxtmsg", nil, nil, wxmsg)
-	if err != nil {
-		log.Println("send wxmsg err:", err)
-		return err
-	}
-	result := &BaseBody{}
-	err = json.Unmarshal(b, result)
-	if err != nil {
-		log.Println("send wxmsg err:", err)
-		return err
+func SendMsg(ctx context.Context, msg string, wxids ...string) error {
+	for _, wxid := range wxids {
+		msg = strings.TrimSpace(msg)
+		wxmsg := &WxMsg{
+			Wxid:    wxid,
+			Content: msg,
+			Atlist:  make([]string, 0),
+		}
+		b, err := client.HttpPost(ctx, host+"sendtxtmsg", nil, nil, wxmsg)
+		if err != nil {
+			log.Println("send wxmsg err:", err)
+			continue
+		}
+		result := &BaseBody{}
+		err = json.Unmarshal(b, result)
+		if err != nil {
+			log.Println("send wxmsg err:", err)
+			continue
+		}
 	}
 	return nil
 }

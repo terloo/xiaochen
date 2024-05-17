@@ -40,7 +40,5 @@ func (w *WeatherNotifier) Notify(ctx context.Context, notified ...string) {
 	}
 
 	// 发送消息
-	for _, wxid := range notified {
-		_ = wxbot.SendMsg(ctx, wxid, wxMsg)
-	}
+	_ = wxbot.SendMsg(ctx, wxMsg, notified...)
 }

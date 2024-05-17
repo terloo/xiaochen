@@ -37,7 +37,5 @@ func (t *TickerNotifier) Notify(ctx context.Context, notified ...string) {
 		wxMsg += fmt.Sprintf("\n")
 	}
 
-	for _, wxid := range notified {
-		_ = wxbot.SendMsg(ctx, wxid, wxMsg)
-	}
+	_ = wxbot.SendMsg(ctx, wxMsg, notified...)
 }

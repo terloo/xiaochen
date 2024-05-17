@@ -8,7 +8,7 @@ import (
 )
 
 func KeepAlive(ctx context.Context) {
-	_ = SendMsg(ctx, family.TestChatroomWxid, "1")
+	_ = SendMsg(ctx, "ping", family.TestChatroomWxid)
 }
 
 func ResponseWithGPT(ctx context.Context, wxid string, message string) {
@@ -17,5 +17,5 @@ func ResponseWithGPT(ctx context.Context, wxid string, message string) {
 	if err != nil {
 		respMessage = err.Error()
 	}
-	_ = SendMsg(ctx, wxid, respMessage)
+	_ = SendMsg(ctx, respMessage, wxid)
 }

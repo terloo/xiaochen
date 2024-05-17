@@ -8,6 +8,7 @@ import (
 
 	"github.com/terloo/xiaochen/almanac"
 	"github.com/terloo/xiaochen/family"
+	"github.com/terloo/xiaochen/util"
 	"github.com/terloo/xiaochen/wxbot"
 )
 
@@ -23,13 +24,12 @@ func TestContact(t *testing.T) {
 }
 
 func TestFoo(t *testing.T) {
-	layout := "2006-01-02"
-	parse, _ := time.ParseInLocation(layout, "1989-05-11", time.Local)
+	parse, _ := time.ParseInLocation(util.DateLayout, "1989-05-11", time.Local)
 	log.Println(parse)
 }
 
 func TestCal(t *testing.T) {
 	month := almanac.NewMonth(2024, 5)
-	wxbot.SendMsg(context.Background(), family.TestChatroomWxid, month.FormatCal())
+	wxbot.SendMsg(context.Background(), month.FormatCal(), family.TestChatroomWxid)
 	log.Println(month.FormatCal())
 }

@@ -2,8 +2,9 @@ package ws
 
 import (
 	"context"
-	"github.com/gorilla/websocket"
 	"log"
+
+	"github.com/gorilla/websocket"
 
 	"github.com/terloo/xiaochen/handler"
 	"github.com/terloo/xiaochen/wxbot"

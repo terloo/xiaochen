@@ -14,11 +14,11 @@ import (
 	"github.com/Lofanmi/chinese-calendar-golang/lunar"
 	"github.com/terloo/xiaochen/client"
 	"github.com/terloo/xiaochen/family"
+	"github.com/terloo/xiaochen/util"
 )
 
 func GetBirthdayFlower(ctx context.Context, p family.People) (*BirthdayFlowerData, error) {
-	timeFormat := "2006-01-02"
-	birthDay, err := time.Parse(timeFormat, p.Birthday.Date)
+	birthDay, err := time.Parse(util.DateLayout, p.Birthday.Date)
 	if err != nil {
 		errorStr := fmt.Sprintf("计算生日(%s)剩余时间错误 %s", p.Birthday.Date, err.Error())
 		log.Printf(errorStr)

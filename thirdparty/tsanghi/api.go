@@ -8,13 +8,14 @@ import (
 	"time"
 
 	"github.com/terloo/xiaochen/client"
+	"github.com/terloo/xiaochen/util"
 )
 
 func GetTodayTicker(ctx context.Context, code string) (*TickerData, error) {
 	param := url.Values{
 		"token":      []string{openKey.Get()},
 		"ticker":     []string{code},
-		"start_date": []string{time.Now().Format("2006-01-02")},
+		"start_date": []string{time.Now().Format(util.DateLayout)},
 	}
 	b, err := client.HttpGet(ctx, openHost+"daily", nil, param)
 
