@@ -8,10 +8,10 @@ import (
 	"github.com/terloo/xiaochen/util"
 )
 
-func TestCalendarNotifier(t *testing.T) {
-	(&CalendarNotifier{
+func TestFestivalNotifier(t *testing.T) {
+	(&FestivalNotifier{
 		&util.SpyClock{
-			SpyTimeStr: "2023-04-05",
+			SpyTimeStr: "2023-08-18",
 		},
 	}).Notify(context.Background(), family.TestChatroomWxid)
 }

@@ -575,7 +575,7 @@ func (l *Lunar) calcLunarEvents() {
 			l.Events.Other = append(l.Events.Other, "瑶族忌鸟节")
 		}
 		if d == "二月初二" {
-			l.Events.Important = append(l.Events.Important, "春龙节(龙抬头)")
+			l.Events.Festival = append(l.Events.Festival, "春龙节(龙抬头)")
 			l.Events.Other = append(l.Events.Other, "畲族会亲节")
 		}
 		if d == "二月初八" {
@@ -615,16 +615,16 @@ func (l *Lunar) calcLunarEvents() {
 			l.Events.Other = append(l.Events.Other, "火把节、星回节(彝、白、佤、阿昌、纳西、基诺族)")
 		}
 		if d == "七月初七" {
-			l.Events.Important = append(l.Events.Important, "七夕(中国情人节,乞巧节,女儿节)")
+			l.Events.Festival = append(l.Events.Festival, "七夕(中国情人节,乞巧节,女儿节)")
 		}
 		if d == "七月十三" {
 			l.Events.Other = append(l.Events.Other, "侗族吃新节")
 		}
 		if d == "七月十五" {
-			l.Events.Important = append(l.Events.Important, "中元节、鬼节")
+			l.Events.Festival = append(l.Events.Festival, "中元节")
 		}
 		if d == "九月初九" {
-			l.Events.Important = append(l.Events.Important, "重阳节")
+			l.Events.Festival = append(l.Events.Festival, "重阳节")
 		}
 		if d == "十月初一" {
 			l.Events.Important = append(l.Events.Important, "祭祖节(十月朝)")
@@ -636,7 +636,7 @@ func (l *Lunar) calcLunarEvents() {
 			l.Events.Other = append(l.Events.Other, "瑶族盘王节")
 		}
 		if d == "十二初八" {
-			l.Events.Important = append(l.Events.Important, "腊八节")
+			l.Events.Festival = append(l.Events.Festival, "腊八节")
 		}
 	}
 	if l.NextMonthName == "正" { // 最后一月

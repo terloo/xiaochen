@@ -54,6 +54,13 @@ func StartPeriodNotifier(ctx context.Context) {
 		calendarNotifier.Notify(_ctx, family.FamilyChatroomWxid)
 	})
 
+	c.AddFunc("10 0 8 * * *", func() {
+		_ctx, cancelFunc := context.WithTimeout(ctx, 10*time.Second)
+		defer cancelFunc()
+		festivalNotifier := FestivalNotifier{&util.RealClock{}}
+		festivalNotifier.Notify(_ctx, family.FamilyChatroomWxid)
+	})
+
 	c.Start()
 	<-ctx.Done()
 	stop := c.Stop()
