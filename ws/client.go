@@ -51,6 +51,6 @@ func ReadMessage(ws *websocket.Conn) (*wxbot.WxGeneralMsg, error) {
 	if err != nil {
 		return nil, err
 	}
-	log.Println("receive: ", receiveMsg)
+	log.Println("receive message: ", receiveMsg)
 	return receiveMsg, nil
 }

@@ -18,6 +18,7 @@ import (
 )
 
 type BirthdayNotifier struct {
+	util.Clock
 }
 
 var _ notify.Notifier = (*BirthdayNotifier)(nil)
