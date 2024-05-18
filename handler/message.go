@@ -18,12 +18,12 @@ var handlers []MessageHandler
 
 func HandleMessage(ctx context.Context, msg wxbot.WxGeneralMsg) {
 	for _, msgData := range msg.Data {
-		if msgData.IsSender == "1" {
-			// 暂不处理自己发送的消息
-			continue
-		}
 		message, err := FormatMessage(msgData)
 		if err != nil {
+			continue
+		}
+		if msgData.IsSender == "1" && !message.At {
+			// 暂不处理自己发送的消息
 			continue
 		}
 		for _, h := range handlers {
