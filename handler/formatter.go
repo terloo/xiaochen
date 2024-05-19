@@ -16,6 +16,8 @@ type FormattedMessage struct {
 	Chatroom     bool
 	At           bool
 	Command      bool
+	CommandName  string
+	CommandArgs  []string
 }
 
 type WxMessageContent struct {
@@ -84,6 +86,15 @@ func FormatMessage(msg wxbot.WxGeneralMsgData) (FormattedMessage, error) {
 	}
 	if strings.HasPrefix(result.Content, "/") {
 		result.Command = true
+		split := strings.Split(result.Content, " ")
+		if len(split) == 0 {
+			result.Command = false
+		} else {
+			result.CommandName = strings.TrimPrefix(split[0], "/")
+			if len(split) >= 2 {
+				result.CommandArgs = split[1:]
+			}
+		}
 	}
 	result.Content = strings.TrimPrefix(result.Content, "/")
 

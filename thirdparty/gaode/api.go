@@ -24,11 +24,11 @@ func GetWeathre(ctx context.Context, city string) (*Weather, error) {
 	if err != nil {
 		return nil, err
 	}
-	gaodeWwather := &Weather{}
-	err = json.Unmarshal(b, gaodeWwather)
+	gaodeWather := &Weather{}
+	err = json.Unmarshal(b, gaodeWather)
 	if err != nil {
 		return nil, err
 	}
 
-	return gaodeWwather, nil
+	return gaodeWather, nil
 }

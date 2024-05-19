@@ -1,9 +1,7 @@
 package juhe
 
-var openHost = "https://eolink.o.apispace.com/"
+import "github.com/terloo/xiaochen/config"
 
-type App struct {
-	AppName string
-	AppKey  string
-	AppUrl  string
-}
+var openHost = "https://v.juhe.cn/"
+
+var openKey = config.NewLoader("thirdparty.juhe.openKey")
