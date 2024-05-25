@@ -3,9 +3,9 @@ package juhe
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"net/url"
 
+	"github.com/pkg/errors"
 	"github.com/terloo/xiaochen/client"
 )
 
@@ -19,11 +19,13 @@ func GetZhouGong(ctx context.Context, keyword string) (*ZhouGongResult, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	zhougong := &ZhouGong{}
 	err = json.Unmarshal(b, zhougong)
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
+
 	if len(zhougong.Result) > 0 {
 		return &zhougong.Result[0], nil
 	}

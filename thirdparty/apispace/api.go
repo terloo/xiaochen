@@ -3,15 +3,13 @@ package apispace
 import (
 	"context"
 	"encoding/json"
-	"errors"
-	"fmt"
-	"log"
 	"net/http"
 	"net/url"
 	"strconv"
 	"time"
 
 	"github.com/Lofanmi/chinese-calendar-golang/lunar"
+	"github.com/pkg/errors"
 	"github.com/terloo/xiaochen/client"
 	"github.com/terloo/xiaochen/family"
 	"github.com/terloo/xiaochen/util"
@@ -20,9 +18,7 @@ import (
 func GetBirthdayFlower(ctx context.Context, p family.People) (*BirthdayFlowerData, error) {
 	birthDay, err := time.Parse(util.DateLayout, p.Birthday.Date)
 	if err != nil {
-		errorStr := fmt.Sprintf("计算生日(%s)剩余时间错误 %s", p.Birthday.Date, err.Error())
-		log.Printf(errorStr)
-		return nil, errors.New(errorStr)
+		return nil, errors.Errorf("解析日期(%s)错误 %s", p.Birthday.Date, err.Error())
 	}
 
 	month := int64(birthDay.Month())
@@ -44,11 +40,11 @@ func GetBirthdayFlower(ctx context.Context, p family.People) (*BirthdayFlowerDat
 	birthdayFlower := &BirthdayFlower{}
 	err = json.Unmarshal(b, birthdayFlower)
 	if err != nil {
-		return nil, err
+		return nil, errors.WithMessagef(err, "花语接口HTTP错误：%s", string(b))
 	}
 
 	if len(birthdayFlower.Data) == 0 {
-		return nil, errors.New("花语接口返回有误：" + string(b))
+		return nil, errors.Errorf("花语接口返回值错误：%s", string(b))
 	}
 	result := birthdayFlower.Data[0]
 	return &result, nil

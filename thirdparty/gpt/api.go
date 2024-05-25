@@ -2,9 +2,8 @@ package gpt
 
 import (
 	"context"
-	"errors"
-	"log"
 
+	"github.com/pkg/errors"
 	"github.com/sashabaranov/go-openai"
 )
 
@@ -27,8 +26,11 @@ func Completion(ctx context.Context, message string) (string, error) {
 	)
 
 	if err != nil {
-		log.Printf("ChatCompletion error: %v\n", err)
-		return "", errors.New("sorry, 出错了！")
+		return "", errors.Wrap(err, "ChatCompletion error")
+	}
+
+	if len(resp.Choices) == 0 {
+		return "", errors.New("ChatCompletion no content")
 	}
 
 	return resp.Choices[0].Message.Content, nil

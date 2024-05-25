@@ -34,7 +34,10 @@ func StartPeriodNotifier(ctx context.Context) {
 	c.AddFunc("0 0 11 * * *", func() {
 		_ctx, cancelFunc := context.WithTimeout(ctx, 10*time.Second)
 		defer cancelFunc()
-		birthdayNotifier := BirthdayNotifier{&util.RealClock{}}
+		birthdayNotifier := BirthdayNotifier{
+			&util.RealClock{},
+			family.Families,
+		}
 		birthdayNotifier.Notify(_ctx, family.FamilyChatroomWxid)
 	})
 

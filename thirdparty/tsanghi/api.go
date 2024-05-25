@@ -18,10 +18,10 @@ func GetTodayTicker(ctx context.Context, code string) (*TickerData, error) {
 		"start_date": []string{time.Now().Format(util.DateLayout)},
 	}
 	b, err := client.HttpGet(ctx, openHost+"daily", nil, param)
-
 	if err != nil {
 		return nil, err
 	}
+
 	ticker := &Ticker{}
 	err = json.Unmarshal(b, ticker)
 	if err != nil {

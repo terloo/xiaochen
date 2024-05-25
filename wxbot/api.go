@@ -3,11 +3,11 @@ package wxbot
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"log"
 	"net/url"
 	"strings"
 
+	"github.com/pkg/errors"
 	"github.com/terloo/xiaochen/client"
 )
 
@@ -18,14 +18,15 @@ func GetWxid(ctx context.Context) (string, error) {
 	if err != nil {
 		return "", err
 	}
+
 	loginState := &LoginState{}
 	err = json.Unmarshal(b, loginState)
 	if err != nil {
-		return "", err
+		return "", errors.WithStack(err)
 	}
+
 	if loginState.Code != 200 {
-		log.Println("not login: " + loginState.Msg)
-		return "", err
+		return "", errors.Errorf("not login: %s", loginState.Msg)
 	}
 	return loginState.Data.Wxid, nil
 }
@@ -35,10 +36,11 @@ func GetContacts(ctx context.Context) (*Contacts, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	contacts := &Contacts{}
 	err = json.Unmarshal(b, contacts)
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 	return contacts, nil
 }
@@ -54,10 +56,11 @@ func GetChatroom(ctx context.Context, wxid string) (*ChatRoom, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	chatroom := &ChatRoom{}
 	err = json.Unmarshal(b, chatroom)
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 	return chatroom, nil
 }
@@ -98,7 +101,7 @@ func RegistryCallback(ctx context.Context, callbackURL string) error {
 	result := &BaseBody{}
 	err = json.Unmarshal(b, result)
 	if err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 	log.Println(result)
 	return nil

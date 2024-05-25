@@ -1,4 +1,4 @@
-package period_test
+package period
 
 import (
 	"context"
@@ -7,11 +7,17 @@ import (
 	"testing"
 
 	"github.com/terloo/xiaochen/family"
-	"github.com/terloo/xiaochen/notify/period"
+	"github.com/terloo/xiaochen/util"
 )
 
 func TestRemainDay(t *testing.T) {
-	m := period.GetRemainingDays()
+	b := &BirthdayNotifier{
+		&util.SpyClock{
+			SpyTimeStr: "2024-05-15",
+		},
+		family.Families,
+	}
+	m := b.GetRemainingDays()
 	msg := ""
 	for p, day := range m {
 		if day == -1 {
@@ -61,5 +67,10 @@ func StrPad(input string, padLength int, padString string, padType string) strin
 }
 
 func TestBirthdayNotifier(t *testing.T) {
-	(&period.BirthdayNotifier{}).Notify(context.Background(), family.TestChatroomWxid)
+	(&BirthdayNotifier{
+		&util.SpyClock{
+			SpyTimeStr: "2024-05-15",
+		},
+		family.Families,
+	}).Notify(context.Background(), family.TestChatroomWxid)
 }

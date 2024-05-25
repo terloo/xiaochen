@@ -4,15 +4,17 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"net/http"
 	neturl "net/url"
+
+	"github.com/pkg/errors"
 )
 
 func HttpGet(ctx context.Context, url string, header http.Header, param neturl.Values) ([]byte, error) {
 	_url, err := neturl.Parse(url)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "url parse error")
 	}
 	urlValues := neturl.Values{}
 	for k, v := range param {
@@ -22,7 +24,7 @@ func HttpGet(ctx context.Context, url string, header http.Header, param neturl.V
 
 	request, err := http.NewRequestWithContext(ctx, http.MethodGet, _url.String(), nil)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "new http request error")
 	}
 	if header == nil {
 		header = http.Header{}
@@ -33,17 +35,25 @@ func HttpGet(ctx context.Context, url string, header http.Header, param neturl.V
 
 	resp, err := http.DefaultClient.Do(request)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "http request error")
 	}
 	defer resp.Body.Close()
 
-	return ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, errors.Wrap(err, "read response body error")
+	}
+
+	if resp.StatusCode/100 != 2 {
+		return nil, errors.Errorf("http status code not ok: %d, body: %s", resp.StatusCode, string(body))
+	}
+	return body, nil
 }
 
 func HttpPost(ctx context.Context, url string, header http.Header, param map[string]string, body interface{}) ([]byte, error) {
 	_url, err := neturl.Parse(url)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "url parse error")
 	}
 	urlValues := neturl.Values{}
 	for k, v := range param {
@@ -53,12 +63,12 @@ func HttpPost(ctx context.Context, url string, header http.Header, param map[str
 
 	b, err := json.Marshal(body)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "request body json marshal error, body: %+v", body)
 	}
 
 	request, err := http.NewRequestWithContext(ctx, http.MethodPost, _url.String(), bytes.NewReader(b))
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "new http request error")
 	}
 	if header == nil {
 		header = http.Header{}
@@ -70,9 +80,17 @@ func HttpPost(ctx context.Context, url string, header http.Header, param map[str
 
 	resp, err := http.DefaultClient.Do(request)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "http request error")
 	}
 	defer resp.Body.Close()
 
-	return ioutil.ReadAll(resp.Body)
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, errors.Wrap(err, "read response body error")
+	}
+
+	if resp.StatusCode/100 != 2 {
+		return nil, errors.Errorf("http status code not ok: %d, body: %s", resp.StatusCode, string(respBody))
+	}
+	return respBody, nil
 }

@@ -2,6 +2,7 @@ package wxbot
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/terloo/xiaochen/family"
@@ -17,7 +18,7 @@ func ResponseWithGPT(ctx context.Context, wxid string, message string) {
 	s, err := gpt.Completion(ctx, message)
 	respMessage := s
 	if err != nil {
-		respMessage = err.Error()
+		respMessage = fmt.Sprintf("sorry，出错了：%v", err)
 	}
 	_ = SendMsg(ctx, respMessage, wxid)
 }

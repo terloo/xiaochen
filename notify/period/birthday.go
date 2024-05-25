@@ -9,6 +9,7 @@ import (
 
 	"github.com/Lofanmi/chinese-calendar-golang/calendar"
 	"github.com/Lofanmi/chinese-calendar-golang/lunar"
+	"github.com/pkg/errors"
 	"github.com/terloo/xiaochen/util"
 
 	"github.com/terloo/xiaochen/family"
@@ -19,6 +20,7 @@ import (
 
 type BirthdayNotifier struct {
 	util.Clock
+	Families []family.People
 }
 
 var _ notify.Notifier = (*BirthdayNotifier)(nil)
@@ -33,7 +35,7 @@ func (b *BirthdayNotifier) Notify(ctx context.Context, notified ...string) {
 	var todayBirth []family.People
 
 	// 排序
-	remainingDays := GetRemainingDays()
+	remainingDays := b.GetRemainingDays()
 	pairs := make([]BirthdayPair, len(remainingDays))
 	i := 0
 	for k, v := range remainingDays {
@@ -78,7 +80,7 @@ func (b *BirthdayNotifier) Notify(ctx context.Context, notified ...string) {
 		flowerMsg := fmt.Sprintf("今天是%s的生日(%d-%d)，生日快乐！\n", p.NickName, p.Birthday.Month, p.Birthday.Day)
 		flower, err := apispace.GetBirthdayFlower(ctx, p)
 		if err != nil {
-			log.Println(err)
+			log.Printf("%+v\n", errors.WithMessage(err, "获取花语失败"))
 			continue
 		}
 		flowerMsg += fmt.Sprintln(flower.BirthdayFlower)
@@ -92,16 +94,16 @@ func (b *BirthdayNotifier) Notify(ctx context.Context, notified ...string) {
 	}
 }
 
-func GetRemainingDays() map[family.People]int {
+func (b *BirthdayNotifier) GetRemainingDays() map[family.People]int {
 
 	result := make(map[family.People]int)
-	for _, p := range family.Families {
-		result[p] = getRemainingDay(p)
+	for _, p := range b.Families {
+		result[p] = b.getRemainingDay(p)
 	}
 	return result
 }
 
-func getRemainingDay(p family.People) int {
+func (b *BirthdayNotifier) getRemainingDay(p family.People) int {
 	if p.Birthday.Date == "" {
 		return -1
 	}
@@ -111,7 +113,7 @@ func getRemainingDay(p family.People) int {
 		return -1
 	}
 
-	now := time.Now()
+	now := b.Clock.Now()
 	nowYear := now.Year()
 	nowMonth := now.Month()
 	nowDay := now.Day()
