@@ -1,4 +1,4 @@
-package handler
+package message
 
 import (
 	"context"
@@ -18,11 +18,11 @@ func (c *CommandHandler) GetHandlerName() string {
 	return "CommandHandler"
 }
 
-func (c *CommandHandler) Support(msg FormattedMessage) bool {
+func (c *CommandHandler) Support(msg wxbot.FormattedMessage) bool {
 	return c.TakeCare(msg) && msg.Command
 }
 
-func (c *CommandHandler) Handle(ctx context.Context, msg FormattedMessage) error {
+func (c *CommandHandler) Handle(ctx context.Context, msg wxbot.FormattedMessage) error {
 	log.Printf("command: %s", msg.CommandName)
 	switch msg.CommandName {
 	case "天气":
@@ -43,4 +43,4 @@ func (c *CommandHandler) Handle(ctx context.Context, msg FormattedMessage) error
 	return nil
 }
 
-var _ MessageHandler = (*CommandHandler)(nil)
+var _ Handler = (*CommandHandler)(nil)

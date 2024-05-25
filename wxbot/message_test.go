@@ -1,28 +1,25 @@
-package handler_test
+package wxbot
 
 import (
 	"encoding/json"
 	"log"
 	"testing"
-
-	"github.com/terloo/xiaochen/handler"
-	"github.com/terloo/xiaochen/wxbot"
 )
 
 func TestMessageFormat(t *testing.T) {
 
-	privateChat := &wxbot.WxGeneralMsgData{}
-	privateChatWithRefer := &wxbot.WxGeneralMsgData{}
-	privateChatWithCommand := &wxbot.WxGeneralMsgData{}
-	privateChatWithReferWithCommand := &wxbot.WxGeneralMsgData{}
-	groupChat := &wxbot.WxGeneralMsgData{}
-	groupChatWithRefer := &wxbot.WxGeneralMsgData{}
-	groupChatWithCommand := &wxbot.WxGeneralMsgData{}
-	groupChatWithReferWithCommand := &wxbot.WxGeneralMsgData{}
-	groupChatWithAt := &wxbot.WxGeneralMsgData{}
-	groupChatWithReferWithAt := &wxbot.WxGeneralMsgData{}
-	groupChatWithCommandWithAt := &wxbot.WxGeneralMsgData{}
-	groupChatWithReferWithCommandWithAt := &wxbot.WxGeneralMsgData{}
+	privateChat := &WxGeneralMsgData{}
+	privateChatWithRefer := &WxGeneralMsgData{}
+	privateChatWithCommand := &WxGeneralMsgData{}
+	privateChatWithReferWithCommand := &WxGeneralMsgData{}
+	groupChat := &WxGeneralMsgData{}
+	groupChatWithRefer := &WxGeneralMsgData{}
+	groupChatWithCommand := &WxGeneralMsgData{}
+	groupChatWithReferWithCommand := &WxGeneralMsgData{}
+	groupChatWithAt := &WxGeneralMsgData{}
+	groupChatWithReferWithAt := &WxGeneralMsgData{}
+	groupChatWithCommandWithAt := &WxGeneralMsgData{}
+	groupChatWithReferWithCommandWithAt := &WxGeneralMsgData{}
 
 	json.Unmarshal([]byte("{\"BytesExtra\":\"CgQIEBAAGvsBCAcS9gE8bXNnc291cmNlPgogICAgPHNlY19tc2dfbm9kZT4KICAgICAgICA8YWxub2RlPgogICAgICAgICAgICA8ZnI+MTwvZnI+CiAgICAgICAgPC9hbG5vZGU+CiAgICA8L3NlY19tc2dfbm9kZT4KICAgIDxwdWE+MTwvcHVhPgogICAgPHNpZ25hdHVyZT5WMV9MZkNueC9kQ3x2MV9MZkNueC9kQzwvc2lnbmF0dXJlPgogICAgPHRtcF9ub2RlPgogICAgICAgIDxwdWJsaXNoZXItaWQgLz4KICAgIDwvdG1wX25vZGU+CjwvbXNnc291cmNlPgoaJAgCEiBmNmI2NGM1ZjI4OTBkNzIwMzkyODUxYjM5NWE0ZjNkOQ==\",\"BytesTrans\":\"\",\"CompressContent\":\"\",\"CreateTime\":\"1715264298\",\"DisplayContent\":\"\",\"FlagEx\":\"0\",\"IsSender\":\"0\",\"MsgSequence\":\"807762176\",\"MsgServerSeq\":\"1\",\"MsgSvrID\":\"2379178631500610834\",\"Reserved0\":\"0\",\"Reserved1\":\"2\",\"Reserved2\":\"\",\"Reserved3\":\"\",\"Reserved4\":\"\",\"Reserved5\":\"\",\"Reserved6\":\"\",\"Sequence\":\"1715264298000\",\"Status\":\"2\",\"StatusEx\":\"0\",\"StrContent\":\"123\",\"StrTalker\":\"wxid_e2whhoao16so21\",\"SubType\":\"0\",\"TalkerId\":\"2\",\"Type\":\"1\",\"localId\":\"994\"}"), privateChat)
 	json.Unmarshal([]byte("{\"BytesExtra\":\"CgQIEBAAGuwCCAcS5wI8bXNnc291cmNlPgogICAgPHB1YT4xPC9wdWE+CiAgICA8c2VjX21zZ19ub2RlPgogICAgICAgIDx1dWlkPjM3OTUxOTc2NjQ2MjZiNTAxZTRiNDBiNWI3OWQwNGQ1XzwvdXVpZD4KICAgICAgICA8cmlzay1maWxlLWZsYWcgLz4KICAgICAgICA8cmlzay1maWxlLW1kNS1saXN0IC8+CiAgICAgICAgPGFsbm9kZT4KICAgICAgICAgICAgPGZyPjE8L2ZyPgogICAgICAgIDwvYWxub2RlPgogICAgPC9zZWNfbXNnX25vZGU+CiAgICA8c2lnbmF0dXJlPlYxX1pTUmN0NkV4fHYxX2p4WHdGdUlkPC9zaWduYXR1cmU+CiAgICA8dG1wX25vZGU+CiAgICAgICAgPHB1Ymxpc2hlci1pZCAvPgogICAgPC90bXBfbm9kZT4KPC9tc2dzb3VyY2U+ChokCAISIGExMTFjNDY0ZWYwZGYwYzQ1Mzc0MzUwNjgxNTJiMjUzGlIIBBJOd3hpZF9leW9tZ2xodjh5aDgyMlxGaWxlU3RvcmFnZVxDYWNoZVwyMDI0LTA1XDhmYWUwYzI5ZGNiMGU1ODA0NDhiMDFiNDA1NzM0MzA5\",\"BytesTrans\":\"\",\"Content\":\"<?xml version=\\\"1.0\\\"?>\\n<msg>\\n\\t<appmsg appid=\\\"\\\" sdkver=\\\"0\\\">\\n\\t\\t<title>111</title>\\n\\t\\t<des />\\n\\t\\t<action>view</action>\\n\\t\\t<type>57</type>\\n\\t\\t<showtype>0</showtype>\\n\\t\\t<content />\\n\\t\\t<url />\\n\\t\\t<dataurl />\\n\\t\\t<lowurl />\\n\\t\\t<lowdataurl />\\n\\t\\t<recorditem />\\n\\t\\t<thumburl />\\n\\t\\t<messageaction />\\n\\t\\t<laninfo />\\n\\t\\t<refermsg>\\n\\t\\t\\t<type>1</type>\\n\\t\\t\\t<svrid>2379178631500610834</svrid>\\n\\t\\t\\t<fromusr>wxid_eyomglhv8yh822</fromusr>\\n\\t\\t\\t<chatusr>wxid_e2whhoao16so21</chatusr>\\n\\t\\t\\t<createtime>1715264298</createtime>\\n\\t\\t\\t<displayname>陈思杰</displayname>\\n\\t\\t\\t<msgsource>&lt;msgsource&gt;\\n    &lt;sec_msg_node&gt;\\n        &lt;alnode&gt;\\n            &lt;fr&gt;1&lt;/fr&gt;\\n        &lt;/alnode&gt;\\n    &lt;/sec_msg_node&gt;\\n    &lt;pua&gt;1&lt;/pua&gt;\\n&lt;/msgsource&gt;\\n</msgsource>\\n\\t\\t\\t<content>123</content>\\n\\t\\t</refermsg>\\n\\t\\t<extinfo />\\n\\t\\t<sourceusername />\\n\\t\\t<sourcedisplayname />\\n\\t\\t<commenturl />\\n\\t\\t<appattach>\\n\\t\\t\\t<totallen>0</totallen>\\n\\t\\t\\t<attachid />\\n\\t\\t\\t<emoticonmd5 />\\n\\t\\t\\t<fileext />\\n\\t\\t\\t<aeskey />\\n\\t\\t</appattach>\\n\\t\\t<webviewshared>\\n\\t\\t\\t<publisherId />\\n\\t\\t\\t<publisherReqId>0</publisherReqId>\\n\\t\\t</webviewshared>\\n\\t\\t<weappinfo>\\n\\t\\t\\t<pagepath />\\n\\t\\t\\t<username />\\n\\t\\t\\t<appid />\\n\\t\\t\\t<appservicetype>0</appservicetype>\\n\\t\\t</weappinfo>\\n\\t\\t<websearch />\\n\\t</appmsg>\\n\\t<fromusername>wxid_e2whhoao16so21</fromusername>\\n\\t<scene>0</scene>\\n\\t<appinfo>\\n\\t\\t<version>1</version>\\n\\t\\t<appname></appname>\\n\\t</appinfo>\\n\\t<commenturl></commenturl>\\n</msg>\\n\\u0000\",\"CreateTime\":\"1715264322\",\"DisplayContent\":\"\",\"FlagEx\":\"0\",\"IsSender\":\"0\",\"MsgSequence\":\"807762177\",\"MsgServerSeq\":\"1\",\"MsgSvrID\":\"2894796172161511741\",\"Reserved0\":\"0\",\"Reserved1\":\"2\",\"Reserved2\":\"\",\"Reserved3\":\"\",\"Reserved4\":\"\",\"Reserved5\":\"\",\"Reserved6\":\"\",\"Sequence\":\"1715264322000\",\"Status\":\"2\",\"StatusEx\":\"0\",\"StrContent\":\"\",\"StrTalker\":\"wxid_e2whhoao16so21\",\"SubType\":\"57\",\"TalkerId\":\"2\",\"Type\":\"49\",\"localId\":\"995\"}"), privateChatWithRefer)
@@ -40,73 +37,73 @@ func TestMessageFormat(t *testing.T) {
 	// chat := family.TestChatroomWxid
 	// user := family.TestChatroomWxid
 
-	privateChatMessage, err := handler.FormatMessage(*privateChat)
+	privateChatMessage, err := FormatMessage(*privateChat)
 	if err != nil {
 		t.FailNow()
 	}
 	log.Println(privateChatMessage)
 
-	privateChatWithReferMessage, err := handler.FormatMessage(*privateChatWithRefer)
+	privateChatWithReferMessage, err := FormatMessage(*privateChatWithRefer)
 	if err != nil {
 		t.FailNow()
 	}
 	log.Println(privateChatWithReferMessage)
 
-	privateChatWithCommandMessage, err := handler.FormatMessage(*privateChatWithCommand)
+	privateChatWithCommandMessage, err := FormatMessage(*privateChatWithCommand)
 	if err != nil {
 		t.FailNow()
 	}
 	log.Println(privateChatWithCommandMessage)
 
-	privateChatWithReferWithCommandMessage, err := handler.FormatMessage(*privateChatWithReferWithCommand)
+	privateChatWithReferWithCommandMessage, err := FormatMessage(*privateChatWithReferWithCommand)
 	if err != nil {
 		t.FailNow()
 	}
 	log.Println(privateChatWithReferWithCommandMessage)
 
-	groupChatMessage, err := handler.FormatMessage(*groupChat)
+	groupChatMessage, err := FormatMessage(*groupChat)
 	if err != nil {
 		t.FailNow()
 	}
 	log.Println(groupChatMessage)
 
-	groupChatWithReferMessage, err := handler.FormatMessage(*groupChatWithRefer)
+	groupChatWithReferMessage, err := FormatMessage(*groupChatWithRefer)
 	if err != nil {
 		t.FailNow()
 	}
 	log.Println(groupChatWithReferMessage)
 
-	groupChatWithCommandMessage, err := handler.FormatMessage(*groupChatWithCommand)
+	groupChatWithCommandMessage, err := FormatMessage(*groupChatWithCommand)
 	if err != nil {
 		t.FailNow()
 	}
 	log.Println(groupChatWithCommandMessage)
 
-	groupChatWithReferWithCommandMessage, err := handler.FormatMessage(*groupChatWithReferWithCommand)
+	groupChatWithReferWithCommandMessage, err := FormatMessage(*groupChatWithReferWithCommand)
 	if err != nil {
 		t.FailNow()
 	}
 	log.Println(groupChatWithReferWithCommandMessage)
 
-	groupChatWithAtMessage, err := handler.FormatMessage(*groupChatWithAt)
+	groupChatWithAtMessage, err := FormatMessage(*groupChatWithAt)
 	if err != nil {
 		t.FailNow()
 	}
 	log.Println(groupChatWithAtMessage)
 
-	groupChatWithReferWithAtMessage, err := handler.FormatMessage(*groupChatWithReferWithAt)
+	groupChatWithReferWithAtMessage, err := FormatMessage(*groupChatWithReferWithAt)
 	if err != nil {
 		t.FailNow()
 	}
 	log.Println(groupChatWithReferWithAtMessage)
 
-	groupChatWithCommandWithAtMessage, err := handler.FormatMessage(*groupChatWithCommandWithAt)
+	groupChatWithCommandWithAtMessage, err := FormatMessage(*groupChatWithCommandWithAt)
 	if err != nil {
 		t.FailNow()
 	}
 	log.Println(groupChatWithCommandWithAtMessage)
 
-	groupChatWithReferWithCommandWithAtMessage, err := handler.FormatMessage(*groupChatWithReferWithCommandWithAt)
+	groupChatWithReferWithCommandWithAtMessage, err := FormatMessage(*groupChatWithReferWithCommandWithAt)
 	if err != nil {
 		t.FailNow()
 	}

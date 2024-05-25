@@ -1,13 +1,12 @@
-package handler
+package wxbot
 
 import (
 	"encoding/xml"
 	"strings"
-
-	"github.com/terloo/xiaochen/wxbot"
 )
 
 type FormattedMessage struct {
+	Self         bool   // 是否自己发送
 	Chat         string // 对话id
 	Sender       string // 消息发送者id
 	Content      string
@@ -45,10 +44,12 @@ type Refermsg struct {
 	Createtime  int    `xml:"createtime"`
 }
 
-func FormatMessage(msg wxbot.WxGeneralMsgData) (FormattedMessage, error) {
+func FormatMessage(msg WxGeneralMsgData) (FormattedMessage, error) {
 	result := FormattedMessage{
 		Chat: msg.StrTalker,
 	}
+
+	result.Self = msg.IsSender == "1"
 
 	if len(msg.Sender) == 0 {
 		// 私聊

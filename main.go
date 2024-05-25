@@ -8,8 +8,8 @@ import (
 	"sync"
 	"syscall"
 
+	"github.com/terloo/xiaochen/message"
 	"github.com/terloo/xiaochen/notify/period"
-	"github.com/terloo/xiaochen/ws"
 	"github.com/terloo/xiaochen/wxbot"
 )
 
@@ -35,7 +35,7 @@ func main() {
 	}()
 	go func() {
 		wg.Add(1)
-		ws.StartReceiveMessage(ctx)
+		message.StartConsumer(ctx)
 		wg.Done()
 	}()
 

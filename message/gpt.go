@@ -1,4 +1,4 @@
-package handler
+package message
 
 import (
 	"context"
@@ -25,13 +25,13 @@ func (c *GPTHandler) GetHandlerName() string {
 	return "GPTHandler"
 }
 
-func (c *GPTHandler) Support(msg FormattedMessage) bool {
+func (c *GPTHandler) Support(msg wxbot.FormattedMessage) bool {
 	return c.TakeCare(msg) && (msg.At || selfWxid == msg.ReferSender) && !msg.Command
 }
 
-func (c *GPTHandler) Handle(ctx context.Context, msg FormattedMessage) error {
+func (c *GPTHandler) Handle(ctx context.Context, msg wxbot.FormattedMessage) error {
 	go wxbot.ResponseWithGPT(ctx, msg.Chat, msg.Content)
 	return nil
 }
 
-var _ MessageHandler = (*GPTHandler)(nil)
+var _ Handler = (*GPTHandler)(nil)
