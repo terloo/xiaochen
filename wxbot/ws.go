@@ -26,32 +26,43 @@ func StartReceiveMessage(ctx context.Context) <-chan FormattedMessage {
 	}()
 
 	go func() {
-		defer func() {
-			if r := recover(); r != nil {
-				log.Println("接收消息panic: ", r)
-			}
-		}()
-
 		for {
 			if isClosed {
 				break
 			}
-			message, err := ReadMessage(ws)
-			if err != nil {
-				// TODO 判断错误类型，如果连接已关闭则需要重新连接
-				continue
-			}
-			for _, data := range message.Data {
-				formattedMessage, err := FormatMessage(data)
+
+			func() {
+				defer func() {
+					if r := recover(); r != nil {
+						log.Println("websocket panic: ", r)
+						// panic后重新建立连接
+						ws, _, err = websocket.DefaultDialer.DialContext(ctx, url, nil)
+						if err != nil {
+							log.Fatal(err)
+						}
+						log.Println("reconnect websocket")
+					}
+				}()
+
+				message, err := ReadMessage(ws)
 				if err != nil {
-					continue
+					log.Println(err)
+					return
 				}
-				if formattedMessage.Self && !formattedMessage.At {
-					// 暂不处理自己发送的消息
-					continue
+				for _, data := range message.Data {
+					formattedMessage, err := FormatMessage(data)
+					if err != nil {
+						log.Println(err)
+						return
+					}
+					if formattedMessage.Self && !formattedMessage.At {
+						// 暂不处理自己发送的消息
+						return
+					}
+					resultChan <- formattedMessage
 				}
-				resultChan <- formattedMessage
-			}
+				return
+			}()
 		}
 	}()
 
