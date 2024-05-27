@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/terloo/xiaochen/family"
+	"github.com/terloo/xiaochen/message/command"
 	"github.com/terloo/xiaochen/wxbot"
 )
 
@@ -17,6 +18,10 @@ var handlers []Handler
 
 func init() {
 	handlers = append(handlers, &CommandHandler{
+		Handlers: []command.Handler{
+			&command.Zhougong{},
+			&command.Weather{},
+		},
 		CommonHandler: CommonHandler{
 			CareSender: []string{family.FamilyChatroomWxid, family.TestChatroomWxid},
 		},

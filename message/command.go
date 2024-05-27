@@ -3,15 +3,14 @@ package message
 import (
 	"context"
 	"log"
-	"strings"
 
-	"github.com/terloo/xiaochen/notify/period"
-	"github.com/terloo/xiaochen/thirdparty/juhe"
+	"github.com/terloo/xiaochen/message/command"
 	"github.com/terloo/xiaochen/wxbot"
 )
 
 type CommandHandler struct {
 	CommonHandler
+	Handlers []command.Handler
 }
 
 func (c *CommandHandler) GetHandlerName() string {
@@ -23,24 +22,13 @@ func (c *CommandHandler) Support(msg wxbot.FormattedMessage) bool {
 }
 
 func (c *CommandHandler) Handle(ctx context.Context, msg wxbot.FormattedMessage) error {
-	log.Printf("command: %s", msg.CommandName)
-	switch msg.CommandName {
-	case "天气":
-		weatherNotifier := period.WeatherNotifier{}
-		weatherNotifier.Notify(ctx, msg.Chat)
-	case "解梦":
-		zhouGongResult, err := juhe.GetZhouGong(ctx, strings.Join(msg.CommandArgs, " "))
-		if err != nil {
-			wxbot.SendMsg(ctx, err.Error(), msg.Chat)
-			return err
+	log.Printf("handle command: %s", msg.CommandName)
+	for _, handler := range c.Handlers {
+		if handler.CommandName() == msg.CommandName {
+			return handler.Exec(ctx, msg.Chat, msg.CommandArgs)
 		}
-		respMsg := strings.Join(zhouGongResult.List, "\n")
-		_ = wxbot.SendMsg(ctx, respMsg, msg.Chat)
-	default:
-		_ = wxbot.SendMsg(ctx, "未知命令", msg.Chat)
 	}
-
-	return nil
+	return wxbot.SendMsg(ctx, "未知命令", msg.Chat)
 }
 
 var _ Handler = (*CommandHandler)(nil)
