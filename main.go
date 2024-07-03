@@ -8,6 +8,7 @@ import (
 	"sync"
 	"syscall"
 
+	_ "github.com/terloo/xiaochen/config"
 	"github.com/terloo/xiaochen/message"
 	"github.com/terloo/xiaochen/notify/period"
 	"github.com/terloo/xiaochen/wxbot"

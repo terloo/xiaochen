@@ -2,13 +2,17 @@ package wxbot
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/gorilla/websocket"
+
+	"github.com/terloo/xiaochen/config"
 )
 
 func StartReceiveMessage(ctx context.Context) <-chan FormattedMessage {
-	url := "ws://tx:8080/ws/generalMsg"
+	wxBotHost := config.NewLoader("main.wxBotHost").Get()
+	url := fmt.Sprintf("ws://%s/ws/generalMsg", wxBotHost)
 	ws, _, err := websocket.DefaultDialer.DialContext(ctx, url, nil)
 	if err != nil {
 		log.Fatal(err)

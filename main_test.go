@@ -8,6 +8,7 @@ import (
 
 	"github.com/terloo/xiaochen/almanac"
 	"github.com/terloo/xiaochen/family"
+	"github.com/terloo/xiaochen/notify/period"
 	"github.com/terloo/xiaochen/util"
 	"github.com/terloo/xiaochen/wxbot"
 )
@@ -32,4 +33,9 @@ func TestCal(t *testing.T) {
 	month := almanac.NewMonth(2024, 5)
 	wxbot.SendMsg(context.Background(), month.FormatCal(), family.TestChatroomWxid)
 	log.Println(month.FormatCal())
+}
+
+func TestWeather(t *testing.T) {
+	weatherNotifier := period.WeatherNotifier{}
+	weatherNotifier.Notify(context.Background(), family.TestChatroomWxid)
 }

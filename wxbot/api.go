@@ -3,15 +3,18 @@ package wxbot
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/url"
 	"strings"
 
 	"github.com/pkg/errors"
+
 	"github.com/terloo/xiaochen/client"
+	"github.com/terloo/xiaochen/config"
 )
 
-var host = "http://tx:8080/api/"
+var host = fmt.Sprintf("http://%s/api/", config.NewLoader("main.wxBotHost").Get())
 
 func GetWxid(ctx context.Context) (string, error) {
 	b, err := client.HttpGet(ctx, host+"checklogin", nil, nil)
