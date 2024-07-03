@@ -36,7 +36,7 @@ func (w *WeatherNotifier) Notify(ctx context.Context, notified ...string) {
 			continue
 		}
 		wxMsg += fmt.Sprintf("\t主要天气：%s\n", caiyun.SkyconMap[daily.Skycon08H20H[0].Value])
-		wxMsg += fmt.Sprintf("\t白天降水概率：%.0f\n", daily.Precipitation08H20H[0].Probability)
+		wxMsg += fmt.Sprintf("\t白天降水概率：%.0f%%\n", daily.Precipitation08H20H[0].Probability)
 		wxMsg += fmt.Sprintf("\t白天最高气温：%.0f\n", daily.Temperature08H20H[0].Max)
 		wxMsg += fmt.Sprintf("\t白天最低气温：%.0f\n", daily.Temperature08H20H[0].Min)
 		wxMsg += fmt.Sprintf("\t白天平均气温：%.0f\n", daily.Temperature08H20H[0].Avg)

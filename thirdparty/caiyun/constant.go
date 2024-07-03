@@ -12,6 +12,7 @@ var WeatherLocation = map[string]string{
 	"成都市华府大道": "104.06,30.53",
 	"江油市":     "104.73,31.78",
 	"武都镇":     "104.78,31.88",
+	"北京市西城区":  "116.35,39.86",
 }
 
 var SkyconMap = map[string]string{
