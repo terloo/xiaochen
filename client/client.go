@@ -16,11 +16,7 @@ func HttpGet(ctx context.Context, url string, header http.Header, param neturl.V
 	if err != nil {
 		return nil, errors.Wrap(err, "url parse error")
 	}
-	urlValues := neturl.Values{}
-	for k, v := range param {
-		urlValues.Add(k, v[0])
-	}
-	_url.RawQuery = urlValues.Encode()
+	_url.RawQuery = param.Encode()
 
 	request, err := http.NewRequestWithContext(ctx, http.MethodGet, _url.String(), nil)
 	if err != nil {
@@ -50,16 +46,12 @@ func HttpGet(ctx context.Context, url string, header http.Header, param neturl.V
 	return body, nil
 }
 
-func HttpPost(ctx context.Context, url string, header http.Header, param map[string]string, body interface{}) ([]byte, error) {
+func HttpPost(ctx context.Context, url string, header http.Header, param neturl.Values, body interface{}) ([]byte, error) {
 	_url, err := neturl.Parse(url)
 	if err != nil {
 		return nil, errors.Wrap(err, "url parse error")
 	}
-	urlValues := neturl.Values{}
-	for k, v := range param {
-		urlValues.Add(k, v)
-	}
-	_url.RawQuery = urlValues.Encode()
+	_url.RawQuery = param.Encode()
 
 	b, err := json.Marshal(body)
 	if err != nil {
