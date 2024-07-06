@@ -6,6 +6,7 @@ import (
 	"net/url"
 
 	"github.com/pkg/errors"
+
 	"github.com/terloo/xiaochen/client"
 )
 

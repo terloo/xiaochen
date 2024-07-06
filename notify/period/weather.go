@@ -83,7 +83,7 @@ func (w *WeatherHourlyNotifier) Notify(ctx context.Context, notified ...string) 
 		}
 
 		lastSkycon, ok := w.LastHourWeather[city]
-		currentSkycon := caiyun.SkyconMap[hourlyResp.Skycon[0].Value]
+		currentSkycon := caiyun.SkyconMap[hourlyResp.Skycon[1].Value]
 		if !ok {
 			w.LastHourWeather[city] = currentSkycon
 			continue

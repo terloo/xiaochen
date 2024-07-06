@@ -32,7 +32,7 @@ func GetDailyWeather(ctx context.Context, location string) (*DailyResp, error) {
 
 func GetHourlyWeather(ctx context.Context, location string) (*HourlyResp, *AlertResp, error) {
 	param := url.Values{}
-	param.Add("hourlysteps", "1")
+	param.Add("hourlysteps", "2")
 	param.Add("alert", "true")
 	header := http.Header{}
 

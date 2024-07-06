@@ -2,6 +2,7 @@ package gpt
 
 import (
 	"github.com/sashabaranov/go-openai"
+
 	"github.com/terloo/xiaochen/config"
 )
 
