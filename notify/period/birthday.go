@@ -117,6 +117,7 @@ func (b *BirthdayNotifier) getRemainingDay(p family.People) int {
 	nowYear := now.Year()
 	nowMonth := now.Month()
 	nowDay := now.Day()
+	log.Printf("nowYear: %s, nowMonth: %s, nowDay: %s, Location %s", nowYear, nowMonth, nowDay, time.Local.String())
 
 	if !p.Birthday.Lunar {
 		nextBirthDay := time.Date(nowYear, birthDay.Month(), birthDay.Day(), 0, 0, 0, 0, time.Local)
