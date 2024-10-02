@@ -25,6 +25,10 @@ func (c *CalendarNotifier) Notify(ctx context.Context, notified ...string) {
 	solarMsg := fmt.Sprintf("公历%s星期%s", now.Format(util.DateLayout), util.IntToWeekday[almDay.Week])
 	solarSpecialDay := ""
 	for _, f := range almDay.Events.Festival {
+		if f == "国庆节假日" {
+			// 特殊处理一下国庆节假日
+			continue
+		}
 		solarSpecialDay += f + "，"
 	}
 	for _, f := range almDay.Events.Important {
