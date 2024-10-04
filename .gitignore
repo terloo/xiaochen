@@ -2,7 +2,7 @@
 .idea
 
 xiaochen
-xiaochen.log
+log/
 pid
 
 families.json
