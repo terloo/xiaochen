@@ -93,7 +93,7 @@ func (w *WeatherHourlyNotifier) Notify(ctx context.Context, notified ...string) 
 		log.Printf("ciry: %s, lastSkycon: %s, currentSkycon: %s", city, lastSkycon, currentSkycon)
 		currentSkyconPriority := slices.Index(caiyun.SkyconPriority, currentSkycon)
 		lastSkyconPriority := slices.Index(caiyun.SkyconPriority, lastSkycon)
-		if (currentSkyconPriority < 15 || lastSkyconPriority < 15) && math.Abs(float64(currentSkyconPriority-lastSkyconPriority)) > 1 {
+		if (currentSkyconPriority < 14 || lastSkyconPriority < 14) && math.Abs(float64(currentSkyconPriority-lastSkyconPriority)) > 1 {
 			WeatherConvertMsg += fmt.Sprintf("%s的天气即将由%s转为%s\n", city, lastSkycon.Sino, currentSkycon.Sino)
 		}
 		w.LastHourWeather[city] = currentSkycon
