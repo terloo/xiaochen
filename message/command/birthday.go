@@ -54,7 +54,7 @@ func (z *Birthday) Exec(ctx context.Context, caller string, args []string) error
 			msg += fmt.Sprintf("%-10s %d-%d\t %s\t 还有%d天过生\n", nickName, month, day, typeStr, remainDay)
 		}
 	}
-	wxbot.SendMsg(ctx, msg, family.TestChatroomWxid)
+	wxbot.SendMsg(ctx, msg, caller)
 	return nil
 }
 
