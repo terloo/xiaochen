@@ -19,7 +19,7 @@ var handlers []Handler
 func init() {
 	handlers = append(handlers, &CommandHandler{
 		Handlers: []command.Handler{
-			&command.Zhougong{},
+			&command.Birthday{},
 			&command.Weather{},
 		},
 		CommonHandler: CommonHandler{
