@@ -13,12 +13,12 @@ func KeepAlive(ctx context.Context) {
 	_ = SendMsg(ctx, "ping", family.TestChatroomWxid)
 }
 
-func ResponseWithGPT(ctx context.Context, wxid string, message string) {
+func ResponseWithGPT(ctx context.Context, target string, sender string, message string) {
 	log.Printf("gpt completion message: %s\n", message)
-	s, err := gpt.Completion(ctx, message)
+	s, err := gpt.Completion(ctx, sender, message)
 	respMessage := s
 	if err != nil {
 		respMessage = fmt.Sprintf("sorry，出错了：%v", err)
 	}
-	_ = SendMsg(ctx, respMessage, wxid)
+	_ = SendMsg(ctx, respMessage, target)
 }

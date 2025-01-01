@@ -2,6 +2,7 @@ package wxbot
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 
@@ -79,6 +80,10 @@ func ReadMessage(ws *websocket.Conn) (*WxGeneralMsg, error) {
 	if err != nil {
 		return nil, err
 	}
-	log.Println("receive message: ", receiveMsg)
+	marshal, err := json.Marshal(receiveMsg)
+	if err != nil {
+		return nil, err
+	}
+	log.Println("receive message: ", string(marshal))
 	return receiveMsg, nil
 }

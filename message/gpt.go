@@ -30,7 +30,7 @@ func (c *GPTHandler) Support(msg wxbot.FormattedMessage) bool {
 }
 
 func (c *GPTHandler) Handle(ctx context.Context, msg wxbot.FormattedMessage) error {
-	go wxbot.ResponseWithGPT(ctx, msg.Chat, msg.Content)
+	go wxbot.ResponseWithGPT(ctx, msg.Chat, msg.Sender, msg.Content)
 	return nil
 }
 
