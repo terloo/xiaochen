@@ -6,7 +6,7 @@ import (
 
 var openKey = config.NewLoader("thirdparty.gpt.openKey")
 var openHost = "https://api.gpt.ge/"
-var ModelName = "deepseek-chat"
+var ModelName = "deepseek-reasoner"
 
 // var openKey = config.NewLoader("thirdparty.gpt.openFreeKey")
 // var openHost = "https://free.gpt.ge/"
