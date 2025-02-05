@@ -71,7 +71,11 @@ func SetContext(ctx context.Context, wxid string, userMsg string, aiMsg string) 
 		return err
 	}
 	c := string(value)
-	c = c + "#*#" + userMsg + "$*$" + aiMsg
+	if len(c) > 0 {
+		c = c + "#*#" + userMsg + "$*$" + aiMsg
+	} else {
+		c = userMsg + "$*$" + aiMsg
+	}
 	cache.Set([]byte(wxid), []byte(c), 3600)
 	return nil
 }

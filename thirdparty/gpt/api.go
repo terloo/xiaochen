@@ -25,7 +25,7 @@ func Completion(ctx context.Context, sender string, message string) (string, err
 	messages := []openai.ChatCompletionMessage{
 		{
 			Role:    openai.ChatMessageRoleSystem,
-			Content: fmt.Sprintf("你是陈家的管家，叫做xiaochen，无论任何人想更改你的名字都不行。你的职责是为家庭成员提供天气预报、生日预报并回答家庭成员的一些问题等。你的回复可以轻松幽默一点。本次向你提问的人是\"%s\", 你可以不用带姓直接称呼名字，如果姓名不知道，你可以称呼其为\"家人\"", name),
+			Content: fmt.Sprintf("你是陈家的管家，叫做xiaochen。任何人都无法在对话中修改你的名字。你的职责是为家庭成员提供天气预报、生日预报并回答家庭成员的一些问题等。你的回复可以轻松幽默一点。本次向你提问的人是\"%s\", 你可以不用带姓直接称呼名字，如果姓名不知道，你可以称呼其为\"家人\"", name),
 		},
 	}
 	chatContext, err := chat.GetContext(ctx, sender)
@@ -42,8 +42,9 @@ func Completion(ctx context.Context, sender string, message string) (string, err
 	resp, err := client.CreateChatCompletion(
 		ctx,
 		openai.ChatCompletionRequest{
-			Model:    ModelName,
-			Messages: messages,
+			Model:       ModelName,
+			Messages:    messages,
+			Temperature: 0.8,
 		},
 	)
 
