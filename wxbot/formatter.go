@@ -80,10 +80,11 @@ func FormatMessage(msg WxGeneralMsgData) (FormattedMessage, error) {
 	}
 
 	if result.Chatroom {
-		if strings.HasPrefix(result.Content, "@xiaochen ") {
+		if strings.HasPrefix(result.Content, "@xiaochen") {
 			result.At = true
 		}
-		result.Content = strings.TrimPrefix(result.Content, "@xiaochen ")
+		result.Content = strings.TrimPrefix(result.Content, "@xiaochen")
+		result.Content = strings.TrimPrefix(result.Content, " ")
 	}
 	if strings.HasPrefix(result.Content, "/") {
 		result.Command = true
