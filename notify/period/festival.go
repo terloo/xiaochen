@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/terloo/xiaochen/almanac"
+	"github.com/terloo/almanac"
 	"github.com/terloo/xiaochen/notify"
 	"github.com/terloo/xiaochen/util"
 	"github.com/terloo/xiaochen/wxbot"

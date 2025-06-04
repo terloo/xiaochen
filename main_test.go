@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/terloo/xiaochen/almanac"
+	"github.com/terloo/almanac"
 	"github.com/terloo/xiaochen/family"
 	"github.com/terloo/xiaochen/notify/period"
 	"github.com/terloo/xiaochen/util"

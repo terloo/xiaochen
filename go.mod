@@ -11,6 +11,7 @@ require (
 	github.com/robfig/cron/v3 v3.0.0
 	github.com/sashabaranov/go-openai v1.36.1
 	github.com/spf13/viper v1.18.2
+	github.com/terloo/almanac v0.0.0-20240515165319-342b420d4804
 	golang.org/x/exp v0.0.0-20230905200255-921286631fa9
 )
 
