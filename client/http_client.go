@@ -35,15 +35,18 @@ func HttpGet(ctx context.Context, url string, header http.Header, param neturl.V
 	}
 	defer resp.Body.Close()
 
-	body, err := io.ReadAll(resp.Body)
+	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, errors.Wrap(err, "read response body error")
+		return nil, errors.Wrap(err, "read response respBody error")
+	}
+	if resp.ContentLength != -1 && resp.ContentLength != int64(len(respBody)) {
+		return nil, errors.Errorf("read response respBody error, except length [%d], but got length [%d]", resp.ContentLength, len(respBody))
 	}
 
 	if resp.StatusCode/100 != 2 {
-		return nil, errors.Errorf("http status code not ok: %d, body: %s", resp.StatusCode, string(body))
+		return nil, errors.Errorf("http status code not ok: %d, respBody: %s", resp.StatusCode, string(respBody))
 	}
-	return body, nil
+	return respBody, nil
 }
 
 func HttpPost(ctx context.Context, url string, header http.Header, param neturl.Values, body interface{}) ([]byte, error) {
@@ -79,6 +82,9 @@ func HttpPost(ctx context.Context, url string, header http.Header, param neturl.
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, errors.Wrap(err, "read response body error")
+	}
+	if resp.ContentLength != -1 && resp.ContentLength != int64(len(respBody)) {
+		return nil, errors.Errorf("read response body error, except length [%d], but got length [%d]", resp.ContentLength, len(respBody))
 	}
 
 	if resp.StatusCode/100 != 2 {
