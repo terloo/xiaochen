@@ -1,22 +1,14 @@
 package family
 
 import (
-	"encoding/json"
 	"log"
-	"os"
 	"time"
 
 	"github.com/Lofanmi/chinese-calendar-golang/lunar"
+	"github.com/terloo/xiaochen/storage"
 
 	"github.com/terloo/xiaochen/util"
 )
-
-type Constant struct {
-	FamilyChatroomWxid string   `json:"family_chatroom_wxid"`
-	TestChatroomWxid   string   `json:"test_chatroom_wxid"`
-	MomWxid            string   `json:"mom_wxid"`
-	Families           []People `json:"families"`
-}
 
 type People struct {
 	NickName string   `json:"nick_name"`
@@ -45,39 +37,51 @@ var MomWxid string
 
 func init() {
 
-	file, err := os.ReadFile("families.json")
-	if err != nil {
-		log.Fatal(err)
-	}
-	cons := &Constant{}
-	err = json.Unmarshal(file, &cons)
+	families, err := storage.WxFamilyRepo.FindAll()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	Families = cons.Families
-	FamilyChatroomWxid = cons.FamilyChatroomWxid
-	TestChatroomWxid = cons.TestChatroomWxid
-	MomWxid = cons.MomWxid
+	familyChatroom, err := storage.WxChatRepo.FindByName("Family")
+	if err != nil {
+		log.Fatal(err)
+	}
+	FamilyChatroomWxid = familyChatroom.Wxid
+	testChatroom, err := storage.WxChatRepo.FindByName("Test")
+	if err != nil {
+		log.Fatal(err)
+	}
+	TestChatroomWxid = testChatroom.Wxid
+	momChatroom, err := storage.WxChatRepo.FindByName("Mom")
+	if err != nil {
+		log.Fatal(err)
+	}
+	MomWxid = momChatroom.Wxid
 
-	for _, f := range Families {
+	for _, f := range families {
 		NameToWxid[f.NickName] = f.Wxid
 		WxidToName[f.Wxid] = f.NickName
 	}
 
 	// 计算生日月和天
-	for i, p := range Families {
-		if p.Birthday.Date == "" {
+	for _, p := range families {
+		if p.Birthday == "" {
 			continue
 		}
-		birthDay, err := time.Parse(util.DateLayout, p.Birthday.Date)
+		birthDay, err := time.Parse(util.DateLayout, p.Birthday)
 		if err != nil {
-			log.Printf("计算生日(%s)剩余时间错误 %s", p.Birthday.Date, err.Error())
+			log.Printf("计算生日(%s)剩余时间错误 %s", p.Birthday, err.Error())
 			continue
 		}
-		if !p.Birthday.Lunar {
-			p.Birthday.Month = int(birthDay.Month())
-			p.Birthday.Day = birthDay.Day()
+		people := People{
+			NickName: p.NickName,
+			Wxid:     p.Wxid,
+		}
+		people.Birthday.Date = p.Birthday
+		people.Birthday.Lunar = p.Lunar
+		if !p.Lunar {
+			people.Birthday.Month = int(birthDay.Month())
+			people.Birthday.Day = birthDay.Day()
 		} else {
 			_, month, day, _ := lunar.FromSolarTimestamp(birthDay.Unix())
 			ZoneName, _ := birthDay.Zone()
@@ -85,10 +89,10 @@ func init() {
 				// 特殊处理一下夏令时导致的天数差1
 				day += 1
 			}
-			p.Birthday.Month = int(month)
-			p.Birthday.Day = int(day)
+			people.Birthday.Month = int(month)
+			people.Birthday.Day = int(day)
 		}
-		Families[i] = p
+		Families = append(Families, people)
 	}
 
 }

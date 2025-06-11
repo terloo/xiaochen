@@ -84,8 +84,11 @@ func SendMsg(ctx context.Context, msg string, wxids ...string) error {
 		result := &BaseBody{}
 		err = json.Unmarshal(b, result)
 		if err != nil {
-			log.Println("send wxmsg err:", err)
+			log.Printf("send wxmsg err: %v, resp: %s\n", err, string(b))
 			continue
+		}
+		if result.Code != 200 {
+			log.Printf("send wxmsg err, message: %s\n", result.Msg)
 		}
 	}
 	return nil
