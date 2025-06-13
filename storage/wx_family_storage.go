@@ -1,0 +1,62 @@
+package storage
+
+import (
+	"errors"
+
+	"github.com/terloo/xiaochen/storage/models"
+
+	"gorm.io/gorm"
+)
+
+type WxFamilyStorage struct {
+	db *gorm.DB
+}
+
+func newWxFamilyStorage(db *gorm.DB) *WxFamilyStorage {
+	return &WxFamilyStorage{db: db}
+}
+
+func (r *WxFamilyStorage) Create(family *models.WxFamily) error {
+	return r.db.Create(family).Error
+}
+
+func (r *WxFamilyStorage) FindAll() ([]*models.WxFamily, error) {
+	var families []*models.WxFamily
+	if err := r.db.Find(&families).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return families, nil
+}
+
+func (r *WxFamilyStorage) FindByID(id uint) (*models.WxFamily, error) {
+	var family models.WxFamily
+	if err := r.db.First(&family, id).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &family, nil
+}
+
+func (r *WxFamilyStorage) FindByName(name string) (*models.WxFamily, error) {
+	var family models.WxFamily
+	if err := r.db.Where("name = ?", name).First(&family).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &family, nil
+}
+
+func (r *WxFamilyStorage) Update(family *models.WxFamily) error {
+	return r.db.Save(family).Error
+}
+
+func (r *WxFamilyStorage) Delete(id uint) error {
+	return r.db.Delete(&models.WxFamily{}, id).Error
+}

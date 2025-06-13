@@ -5,5 +5,5 @@ xiaochen
 log/
 pid
 
-families.json
 xiaochen.yaml
+xiaochen.db
