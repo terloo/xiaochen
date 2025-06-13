@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	neturl "net/url"
+	"time"
 
 	"github.com/pkg/errors"
 )
@@ -18,7 +19,9 @@ func HttpGet(ctx context.Context, url string, header http.Header, param neturl.V
 	}
 	_url.RawQuery = param.Encode()
 
-	request, err := http.NewRequestWithContext(ctx, http.MethodGet, _url.String(), nil)
+	timeoutCtx, cancelFunc := context.WithTimeout(ctx, 5*time.Second)
+	defer cancelFunc()
+	request, err := http.NewRequestWithContext(timeoutCtx, http.MethodGet, _url.String(), nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "new http request error")
 	}
@@ -61,7 +64,9 @@ func HttpPost(ctx context.Context, url string, header http.Header, param neturl.
 		return nil, errors.Wrapf(err, "request body json marshal error, body: %+v", body)
 	}
 
-	request, err := http.NewRequestWithContext(ctx, http.MethodPost, _url.String(), bytes.NewReader(b))
+	timeoutCtx, cancelFunc := context.WithTimeout(ctx, 5*time.Second)
+	defer cancelFunc()
+	request, err := http.NewRequestWithContext(timeoutCtx, http.MethodPost, _url.String(), bytes.NewReader(b))
 	if err != nil {
 		return nil, errors.Wrap(err, "new http request error")
 	}
