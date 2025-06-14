@@ -19,7 +19,7 @@ func HttpGet(ctx context.Context, url string, header http.Header, param neturl.V
 	}
 	_url.RawQuery = param.Encode()
 
-	timeoutCtx, cancelFunc := context.WithTimeout(ctx, 5*time.Second)
+	timeoutCtx, cancelFunc := context.WithTimeout(ctx, 10*time.Second)
 	defer cancelFunc()
 	request, err := http.NewRequestWithContext(timeoutCtx, http.MethodGet, _url.String(), nil)
 	if err != nil {

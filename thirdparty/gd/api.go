@@ -7,23 +7,34 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"net/url"
+	neturl "net/url"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/pkg/errors"
 	"github.com/terloo/xiaochen/client"
+	"github.com/terloo/xiaochen/config"
 
 	"github.com/go-flac/flacpicture/v2"
 	"github.com/go-flac/flacvorbis/v2"
 	goflac "github.com/go-flac/go-flac/v2"
 )
 
+var tickerDuration = config.NewLoader("thirdparty.gd.httpDuration")
+
+var httpGetTicker = time.NewTicker(time.Duration(tickerDuration.GetInt()) * time.Second)
+
+func tickerHttpGet(ctx context.Context, url string, header http.Header, param neturl.Values) ([]byte, error) {
+	<-httpGetTicker.C
+	return client.HttpGet(ctx, url, header, param)
+}
+
 // SearchMusic 搜索音乐
 func SearchMusic(ctx context.Context, source string, search string, count int, page int) ([]*Music, error) {
-	b, err := client.HttpGet(ctx, gdURL.Get(), http.Header{}, url.Values{
+	b, err := tickerHttpGet(ctx, gdURL.Get(), http.Header{}, neturl.Values{
 		"types":  []string{"search"},
 		"source": []string{source},
 		"name":   []string{search},
@@ -122,7 +133,7 @@ func PersistentMusic(ctx context.Context, savePath string, music Music) error {
 
 // DownloadMusicPic 下载音乐封面
 func DownloadMusicPic(ctx context.Context, music Music) (io.Reader, string, error) {
-	b, err := client.HttpGet(ctx, gdURL.Get(), http.Header{}, url.Values{
+	b, err := tickerHttpGet(ctx, gdURL.Get(), http.Header{}, neturl.Values{
 		"types":  []string{"pic"},
 		"source": []string{music.Source},
 		"id":     []string{string(music.PicId)},
@@ -161,7 +172,7 @@ func DownloadMusicPic(ctx context.Context, music Music) (io.Reader, string, erro
 
 // DownloadMusicLyric 下载音乐歌词
 func DownloadMusicLyric(ctx context.Context, music Music) (io.Reader, error) {
-	b, err := client.HttpGet(ctx, gdURL.Get(), http.Header{}, url.Values{
+	b, err := tickerHttpGet(ctx, gdURL.Get(), http.Header{}, neturl.Values{
 		"types":  []string{"lyric"},
 		"source": []string{music.Source},
 		"id":     []string{string(music.LyricId)},
@@ -183,7 +194,7 @@ func DownloadMusicLyric(ctx context.Context, music Music) (io.Reader, error) {
 
 // DownloadMusic 下载音乐
 func DownloadMusic(ctx context.Context, music Music) (io.Reader, error) {
-	b, err := client.HttpGet(ctx, gdURL.Get(), http.Header{}, url.Values{
+	b, err := tickerHttpGet(ctx, gdURL.Get(), http.Header{}, neturl.Values{
 		"types":  []string{"url"},
 		"source": []string{music.Source},
 		"id":     []string{string(music.Id)},
