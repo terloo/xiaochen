@@ -8,19 +8,19 @@ import (
 	"gorm.io/gorm"
 )
 
-type WxFamilyStorage struct {
+type wxFamilyStorage struct {
 	db *gorm.DB
 }
 
-func newWxFamilyStorage(db *gorm.DB) *WxFamilyStorage {
-	return &WxFamilyStorage{db: db}
+func newWxFamilyStorage(db *gorm.DB) *wxFamilyStorage {
+	return &wxFamilyStorage{db: db}
 }
 
-func (r *WxFamilyStorage) Create(family *models.WxFamily) error {
+func (r *wxFamilyStorage) Create(family *models.WxFamily) error {
 	return r.db.Create(family).Error
 }
 
-func (r *WxFamilyStorage) FindAll() ([]*models.WxFamily, error) {
+func (r *wxFamilyStorage) FindAll() ([]*models.WxFamily, error) {
 	var families []*models.WxFamily
 	if err := r.db.Find(&families).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -31,7 +31,7 @@ func (r *WxFamilyStorage) FindAll() ([]*models.WxFamily, error) {
 	return families, nil
 }
 
-func (r *WxFamilyStorage) FindByID(id uint) (*models.WxFamily, error) {
+func (r *wxFamilyStorage) FindByID(id uint) (*models.WxFamily, error) {
 	var family models.WxFamily
 	if err := r.db.First(&family, id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -42,7 +42,7 @@ func (r *WxFamilyStorage) FindByID(id uint) (*models.WxFamily, error) {
 	return &family, nil
 }
 
-func (r *WxFamilyStorage) FindByName(name string) (*models.WxFamily, error) {
+func (r *wxFamilyStorage) FindByName(name string) (*models.WxFamily, error) {
 	var family models.WxFamily
 	if err := r.db.Where("name = ?", name).First(&family).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -53,10 +53,10 @@ func (r *WxFamilyStorage) FindByName(name string) (*models.WxFamily, error) {
 	return &family, nil
 }
 
-func (r *WxFamilyStorage) Update(family *models.WxFamily) error {
+func (r *wxFamilyStorage) Update(family *models.WxFamily) error {
 	return r.db.Save(family).Error
 }
 
-func (r *WxFamilyStorage) Delete(id uint) error {
+func (r *wxFamilyStorage) Delete(id uint) error {
 	return r.db.Delete(&models.WxFamily{}, id).Error
 }

@@ -1,7 +1,7 @@
 package config
 
 import (
-	"fmt"
+	"log"
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/viper"
@@ -14,14 +14,14 @@ func init() {
 
 	err := viper.ReadInConfig()
 	if err != nil {
-		panic(fmt.Errorf("Fatal error read config file: %s \n", err))
+		log.Fatalf("Fatal error read config file: %+v \n", err)
 	}
 
 	viper.WatchConfig()
 	viper.OnConfigChange(func(e fsnotify.Event) {
-		viper.ReadInConfig()
+		err := viper.ReadInConfig()
 		if err != nil {
-			panic(fmt.Errorf("Fatal error read config file: %s \n", err))
+			log.Fatalf("Fatal error read config file: %+v \n", err)
 		}
 	})
 }

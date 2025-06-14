@@ -1,3 +1,5 @@
 package gd
 
-const gdURL string = "https://music-api.gdstudio.xyz/api.php"
+import "github.com/terloo/xiaochen/config"
+
+var gdURL = config.NewLoader("thirdparty.gd.baseUrl")

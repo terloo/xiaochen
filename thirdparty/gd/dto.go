@@ -6,13 +6,13 @@ import (
 )
 
 type Music struct {
-	Id      StringOrInt
-	Name    string
-	Artist  []string
-	Album   string
-	PicId   StringOrInt
-	LyricId StringOrInt
-	Source  string
+	Id      StringOrInt `json:"id,omitempty"`
+	Name    string      `json:"name,omitempty"`
+	Artist  []string    `json:"artist,omitempty"`
+	Album   string      `json:"album,omitempty"`
+	PicId   StringOrInt `json:"pic_id,omitempty"`
+	LyricId StringOrInt `json:"lyric_id,omitempty"`
+	Source  string      `json:"source,omitempty"`
 }
 
 type MusicURL struct {

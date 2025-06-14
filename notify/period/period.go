@@ -14,7 +14,7 @@ import (
 )
 
 func StartPeriodNotifier(ctx context.Context) {
-	printfLogger := cron.VerbosePrintfLogger(log.New(log.Writer(), "[crontab]  ", log.LstdFlags|log.Lshortfile|log.Lmicroseconds))
+	printfLogger := cron.VerbosePrintfLogger(log.New(log.Writer(), "[period_notifier]  ", log.LstdFlags|log.Lshortfile|log.Lmicroseconds))
 	c := cron.New(
 		cron.WithSeconds(),
 		cron.WithLogger(printfLogger),

@@ -22,8 +22,8 @@ import (
 )
 
 // SearchMusic 搜索音乐
-func SearchMusic(ctx context.Context, source string, search string, count int, page int) ([]Music, error) {
-	b, err := client.HttpGet(ctx, gdURL, http.Header{}, url.Values{
+func SearchMusic(ctx context.Context, source string, search string, count int, page int) ([]*Music, error) {
+	b, err := client.HttpGet(ctx, gdURL.Get(), http.Header{}, url.Values{
 		"types":  []string{"search"},
 		"source": []string{source},
 		"name":   []string{search},
@@ -33,7 +33,7 @@ func SearchMusic(ctx context.Context, source string, search string, count int, p
 	if err != nil {
 		return nil, err
 	}
-	var result []Music
+	var result []*Music
 	err = json.Unmarshal(b, &result)
 	if err != nil {
 		return nil, errors.WithStack(err)
@@ -47,18 +47,22 @@ func GetMusic(ctx context.Context, id string, source string, name string, artist
 		return nil, errors.New("no enough search info")
 	}
 	search := fmt.Sprintf("%s %s", name, artist)
+	// 遍历20页
 	for i := 0; i < 20; i++ {
-		musics, err := SearchMusic(ctx, source, search, 20, i)
+		musics, err := SearchMusic(ctx, source, search, 20, i+1)
 		if err != nil {
 			return nil, err
 		}
+		if len(musics) == 1 {
+			break
+		}
 		for _, music := range musics {
 			if id == string(music.Id) {
-				return &music, nil
+				return music, nil
 			}
 		}
 	}
-	return nil, errors.Errorf("music not found, id: %s, source: %s", id, source)
+	return nil, errors.Errorf("music not found, id: %s, source: %s, name: %s, artist %s", id, source, name, artist)
 }
 
 // PersistentMusic 下载并整理歌词元数据，持久化到指定目录中
@@ -118,7 +122,7 @@ func PersistentMusic(ctx context.Context, savePath string, music Music) error {
 
 // DownloadMusicPic 下载音乐封面
 func DownloadMusicPic(ctx context.Context, music Music) (io.Reader, string, error) {
-	b, err := client.HttpGet(ctx, gdURL, http.Header{}, url.Values{
+	b, err := client.HttpGet(ctx, gdURL.Get(), http.Header{}, url.Values{
 		"types":  []string{"pic"},
 		"source": []string{music.Source},
 		"id":     []string{string(music.PicId)},
@@ -147,13 +151,17 @@ func DownloadMusicPic(ctx context.Context, music Music) (io.Reader, string, erro
 	if err != nil {
 		return nil, "", errors.WithStack(err)
 	}
-	return &buf, getExtension(musicPic.Url), nil
+	picFormat, err := guessPicFormat(buf.Bytes())
+	if err != nil {
+		return nil, "", errors.WithStack(err)
+	}
+	return &buf, picFormat, nil
 
 }
 
 // DownloadMusicLyric 下载音乐歌词
 func DownloadMusicLyric(ctx context.Context, music Music) (io.Reader, error) {
-	b, err := client.HttpGet(ctx, gdURL, http.Header{}, url.Values{
+	b, err := client.HttpGet(ctx, gdURL.Get(), http.Header{}, url.Values{
 		"types":  []string{"lyric"},
 		"source": []string{music.Source},
 		"id":     []string{string(music.LyricId)},
@@ -175,7 +183,7 @@ func DownloadMusicLyric(ctx context.Context, music Music) (io.Reader, error) {
 
 // DownloadMusic 下载音乐
 func DownloadMusic(ctx context.Context, music Music) (io.Reader, error) {
-	b, err := client.HttpGet(ctx, gdURL, http.Header{}, url.Values{
+	b, err := client.HttpGet(ctx, gdURL.Get(), http.Header{}, url.Values{
 		"types":  []string{"url"},
 		"source": []string{music.Source},
 		"id":     []string{string(music.Id)},
@@ -219,6 +227,19 @@ func getExtension(filename string) string {
 		return ""
 	}
 	return filename[lastDot+1:]
+}
+
+func guessPicFormat(data []byte) (string, error) {
+	if len(data) < 3 {
+		return "", errors.New("no valid pic data")
+	}
+	if data[0] == 0xFF && data[1] == 0xD8 {
+		return "jpeg", nil
+	}
+	if data[0] == 0x89 && data[1] == 0x50 && data[2] == 0x4E {
+		return "png", nil
+	}
+	return "", errors.Errorf("not valid pic format, header: %v", data[:3])
 }
 
 func modifyMusicMeta(ctx context.Context, reader io.Reader, music Music) (*goflac.File, error) {
@@ -265,28 +286,24 @@ func modifyMusicMeta(ctx context.Context, reader io.Reader, music Music) (*gofla
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
+
 	// 创建图片元数据块
-	if idx := strings.LastIndex(picExtension, "?"); idx != -1 {
-		picExtension = picExtension[:idx]
+	if picExtension != "jpeg" && picExtension != "png" {
+		return nil, errors.Errorf("not valid pic format: %s\n", picExtension)
 	}
-	if picExtension == "jpg" {
-		picExtension = "jpeg"
+	picture, err := flacpicture.NewFromImageData(
+		flacpicture.PictureTypeFrontCover,
+		"Front cover",
+		pic,
+		"image/"+picExtension,
+	)
+	if err != nil {
+		return nil, errors.WithStack(err)
 	}
-	if picExtension == "jpeg" || picExtension == "png" {
+	picturemeta := picture.Marshal()
+	flacFile.Meta = append(flacFile.Meta, &picturemeta)
 
-		picture, err := flacpicture.NewFromImageData(
-			flacpicture.PictureTypeFrontCover,
-			"Front cover",
-			pic,
-			"image/"+picExtension,
-		)
-		if err != nil {
-			return nil, errors.WithStack(err)
-		}
-		picturemeta := picture.Marshal()
-		flacFile.Meta = append(flacFile.Meta, &picturemeta)
-	}
-
+	// 重新生成文件
 	cmtsmeta := vorbisComment.Marshal()
 	if cmtIdx > 0 {
 		flacFile.Meta[cmtIdx] = &cmtsmeta

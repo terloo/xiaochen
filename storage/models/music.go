@@ -6,14 +6,15 @@ import (
 
 type Music struct {
 	gorm.Model
-	MusicId         string `gorm:"index"`
-	Name            string `gorm:"index"`
-	Artist          string
-	Album           string               `gorm:"index"`
-	PicId           string               `gorm:"index"`
-	LyricId         string               `gorm:"index"`
-	Source          MusicSource          `gorm:"index,type:varchar(30)"`
-	DownloadChannel MusicDownloadChannel `gorm:"index,type:varchar(30)"`
+	MusicId         string               `gorm:"index;type:varchar(100);uniqueIndex:uniq_id_source;not null"`
+	Name            string               `gorm:"index;type:varchar(100)"`
+	Artist          string               `gorm:"index;type:varchar(300)"`
+	Album           string               `gorm:"index;type:varchar(100)"`
+	PicId           string               `gorm:"index;type:varchar(100)"`
+	LyricId         string               `gorm:"index;type:varchar(100)"`
+	Source          MusicSource          `gorm:"index;type:varchar(30);uniqueIndex:uniq_id_source;not null"`
+	DownloadChannel MusicDownloadChannel `gorm:"index;type:varchar(30)"`
+	Downloaded      bool                 `gorm:"index;default:0"`
 }
 
 type MusicSource string
@@ -35,6 +36,6 @@ func (s MusicDownloadChannel) String() string {
 
 const (
 	MusicDownloadChannelNeteaseLike MusicDownloadChannel = "netease_like"
-	MusicDownloadChannelWx      MusicDownloadChannel = "wx"
+	MusicDownloadChannelWx          MusicDownloadChannel = "wx"
 	MusicDownloadChannelManual      MusicDownloadChannel = "manual"
 )

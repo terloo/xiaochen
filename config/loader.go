@@ -13,3 +13,7 @@ func NewLoader(key string) *Loader {
 func (c *Loader) Get() string {
 	return viper.GetString(c.key)
 }
+
+func (c *Loader) GetInt() int {
+	return viper.GetInt(c.key)
+}

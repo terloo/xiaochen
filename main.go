@@ -10,6 +10,7 @@ import (
 
 	_ "github.com/terloo/xiaochen/config"
 	"github.com/terloo/xiaochen/message"
+	"github.com/terloo/xiaochen/music"
 	"github.com/terloo/xiaochen/notify/period"
 	"github.com/terloo/xiaochen/wxbot"
 )
@@ -37,6 +38,11 @@ func main() {
 	go func() {
 		wg.Add(1)
 		message.StartConsumer(ctx)
+		wg.Done()
+	}()
+	go func() {
+		wg.Add(1)
+		music.StartPeriodNetease(ctx)
 		wg.Done()
 	}()
 
