@@ -3,9 +3,11 @@ package gd
 import (
 	"bytes"
 	"context"
+	"crypto/md5"
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	neturl "net/url"
 	"os"
@@ -77,41 +79,41 @@ func GetMusic(ctx context.Context, id string, source string, name string, artist
 }
 
 // PersistentMusic 下载并整理歌词元数据，持久化到指定目录中
-func PersistentMusic(ctx context.Context, savePath string, music Music) error {
+func PersistentMusic(ctx context.Context, savePath string, music Music) (string, string, error) {
 	// 目录判断
 	info, err := os.Stat(savePath)
 	if err != nil {
 		if !os.IsNotExist(err) {
-			return errors.Wrap(err, "读取目录失败")
+			return "", "", errors.Wrap(err, "读取目录失败")
 		}
 		err := os.MkdirAll(savePath, os.ModeDir|0755)
 		if err != nil {
-			return errors.Wrap(err, "创建目录失败")
+			return "", "", errors.Wrap(err, "创建目录失败")
 		}
 	}
 	info, err = os.Stat(savePath)
 	if err != nil {
-		return errors.Wrap(err, "读取目录失败")
+		return "", "", errors.Wrap(err, "读取目录失败")
 	}
 	if !info.IsDir() {
-		return errors.Errorf("%s 不是目录", savePath)
+		return "", "", errors.Errorf("%s 不是目录", savePath)
 	}
 
 	_, err = os.ReadDir(savePath)
 	if err != nil {
-		return errors.Wrap(err, "读取目录失败")
+		return "", "", errors.Wrap(err, "读取目录失败")
 	}
 
 	// 下载歌曲
 	reader, err := DownloadMusic(ctx, music)
 	if err != nil {
-		return err
+		return "", "", err
 	}
 
 	// 修改歌曲元数据
 	flacFile, err := modifyMusicMeta(ctx, reader, music)
 	if err != nil {
-		return err
+		return "", "", err
 	}
 	defer flacFile.Close()
 
@@ -120,15 +122,20 @@ func PersistentMusic(ctx context.Context, savePath string, music Music) error {
 	musicPath := filepath.Join(savePath, musicName)
 	file, err := os.OpenFile(musicPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
-		return errors.Wrapf(err, "打开[%s]失败", musicPath)
+		return "", "", errors.Wrapf(err, "打开[%s]失败", musicPath)
 	}
 	defer file.Close()
 
 	_, err = flacFile.WriteTo(file)
 	if err != nil {
-		return errors.Wrapf(err, "保存最终文件[%s]失败", musicPath)
+		return "", "", errors.Wrapf(err, "保存最终文件[%s]失败", musicPath)
 	}
-	return nil
+	fileMD5, err := calculateFileMD5(musicPath)
+	if err != nil {
+		log.Printf("calculate file MD5 error: %+v", err)
+		fileMD5 = ""
+	}
+	return musicName, fileMD5, nil
 }
 
 // DownloadMusicPic 下载音乐封面
@@ -251,6 +258,32 @@ func guessPicFormat(data []byte) (string, error) {
 		return "png", nil
 	}
 	return "", errors.Errorf("not valid pic format, header: %v", data[:3])
+}
+
+func calculateFileMD5(filePath string) (string, error) {
+	file, err := os.Open(filePath)
+	if err != nil {
+		return "", errors.WithStack(err)
+	}
+	defer file.Close()
+
+	hash := md5.New()
+
+	buf := make([]byte, 65536) // 64KB缓冲区
+	for {
+		n, err := file.Read(buf)
+		if n > 0 {
+			hash.Write(buf[:n])
+		}
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return "", errors.WithStack(err)
+		}
+	}
+
+	return fmt.Sprintf("%x", hash.Sum(nil)), nil
 }
 
 func modifyMusicMeta(ctx context.Context, reader io.Reader, music Music) (*goflac.File, error) {

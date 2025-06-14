@@ -13,6 +13,8 @@ type Music struct {
 	PicId           string               `gorm:"index;type:varchar(100)"`
 	LyricId         string               `gorm:"index;type:varchar(100)"`
 	Source          MusicSource          `gorm:"index;type:varchar(30);uniqueIndex:uniq_id_source;not null"`
+	FileName        string               `gorm:"uniqueIndex;type:varchar(150);"`
+	MD5             string               `gorm:"index;type:varchar(32)"`
 	DownloadChannel MusicDownloadChannel `gorm:"index;type:varchar(30)"`
 	Downloaded      bool                 `gorm:"index;default:0"`
 }

@@ -106,7 +106,7 @@ func PersistentLikeMusic(ctx context.Context) {
 					log.Printf("get dg music info error: %+v\n", err)
 					continue
 				}
-				err = gd.PersistentMusic(ctx, savePath.Get(), *gdMusic)
+				fileName, md5, err := gd.PersistentMusic(ctx, savePath.Get(), *gdMusic)
 				if err != nil {
 					log.Printf("persistent dg music file error: %+v\n", err)
 					continue
@@ -120,6 +120,8 @@ func PersistentLikeMusic(ctx context.Context) {
 					PicId:           string(gdMusic.PicId),
 					LyricId:         string(gdMusic.LyricId),
 					Source:          models.MusicSource(gdMusic.Source),
+					FileName:        fileName,
+					MD5:             md5,
 					DownloadChannel: models.MusicDownloadChannelNeteaseLike,
 					Downloaded:      true,
 				})

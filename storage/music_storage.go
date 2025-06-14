@@ -27,6 +27,12 @@ func (r *musicStorage) Upsert(music *models.Music) error {
 		DoUpdates: []clause.Assignment{{
 			Column: clause.Column{Name: "downloaded"},
 			Value:  music.Downloaded,
+		}, {
+			Column: clause.Column{Name: "md5"},
+			Value:  music.MD5,
+		}, {
+			Column: clause.Column{Name: "file_name"},
+			Value:  music.FileName,
 		}},
 	}).Create(music).Error
 }
