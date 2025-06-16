@@ -21,19 +21,18 @@ func StartReceiveMessage(ctx context.Context) <-chan FormattedMessage {
 
 	resultChan := make(chan FormattedMessage, 10)
 
-	isClosed := false
 	go func() {
 		<-ctx.Done()
 		log.Println("close websocket connection...")
 		_ = ws.Close()
-		isClosed = true
 		close(resultChan)
 	}()
 
 	go func() {
 		for {
-			if isClosed {
-				break
+			if err := ctx.Err(); err != nil {
+				log.Println("stop receive message")
+				return
 			}
 
 			func() {
@@ -49,12 +48,15 @@ func StartReceiveMessage(ctx context.Context) <-chan FormattedMessage {
 					}
 				}()
 
-				message, err := ReadMessage(ws)
+				message, err := ReadMessage(ctx, ws)
 				if err != nil {
 					log.Printf("read message error: %+v\n", err)
 					return
 				}
 				for _, data := range message.Data {
+					if err := ctx.Err(); err != nil {
+						return
+					}
 					formattedMessage, err := FormatMessage(data)
 					if err != nil {
 						log.Printf("format message error: %+v\n", err)
@@ -74,7 +76,11 @@ func StartReceiveMessage(ctx context.Context) <-chan FormattedMessage {
 	return resultChan
 }
 
-func ReadMessage(ws *websocket.Conn) (*WxGeneralMsg, error) {
+func ReadMessage(ctx context.Context, ws *websocket.Conn) (*WxGeneralMsg, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+
 	receiveMsg := &WxGeneralMsg{}
 	err := ws.ReadJSON(receiveMsg)
 	if err != nil {

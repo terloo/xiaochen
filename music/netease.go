@@ -55,6 +55,10 @@ func StartPeriodNetease(ctx context.Context) {
 }
 
 func PersistentLikeMusic(ctx context.Context) {
+	if err := ctx.Err(); err != nil {
+		return
+	}
+
 	// 获取网易云like列表
 	playList, err := netease.GetUserPlayList(ctx, uid.GetInt())
 	if err != nil {
@@ -62,6 +66,9 @@ func PersistentLikeMusic(ctx context.Context) {
 	}
 
 	for _, pl := range playList {
+		if err := ctx.Err(); err != nil {
+			return
+		}
 		if pl.SpecialType != 5 {
 			// 仅获取“我喜欢”
 			continue
@@ -76,6 +83,10 @@ func PersistentLikeMusic(ctx context.Context) {
 		}
 		chunksSize := 20
 		for i := 0; i < len(trackIds); i += chunksSize {
+			if err := ctx.Err(); err != nil {
+				return
+			}
+
 			end := i + chunksSize
 			if end > len(trackIds) {
 				end = len(trackIds)
@@ -91,6 +102,10 @@ func PersistentLikeMusic(ctx context.Context) {
 				continue
 			}
 			for _, music := range musics {
+				if err := ctx.Err(); err != nil {
+					return
+				}
+
 				record, err := storage.MusicRepo.FindByMusicIdAndSource(strconv.Itoa(music.Id), models.MusicSourceNetease)
 				if err != nil {
 					log.Printf("get db data error: %+v\n", err)
