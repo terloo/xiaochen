@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"io"
+	"log"
 	"net/http"
 	neturl "net/url"
 	"time"
@@ -32,6 +33,7 @@ func HttpGet(ctx context.Context, url string, header http.Header, param neturl.V
 	request.Header.Add("Accept", "*/*")
 	request.Header.Add("User-Agent", "xiaochen/0.0.1")
 
+	log.Printf("http GET request, url: %s, header: %+v\n", _url.String(), header)
 	resp, err := http.DefaultClient.Do(request)
 	if err != nil {
 		return nil, errors.Wrap(err, "http request error")
@@ -78,6 +80,7 @@ func HttpPost(ctx context.Context, url string, header http.Header, param neturl.
 	request.Header.Add("User-Agent", "xiaochen/0.0.1")
 	request.Header.Add("Content-Type", "application/json")
 
+	log.Printf("http POST request, url: %s, header: %+v, body: %+v\n", _url.String(), header, string(b))
 	resp, err := http.DefaultClient.Do(request)
 	if err != nil {
 		return nil, errors.Wrap(err, "http request error")
