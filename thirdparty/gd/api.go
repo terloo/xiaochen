@@ -19,10 +19,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/terloo/xiaochen/client"
 	"github.com/terloo/xiaochen/config"
-
-	"github.com/go-flac/flacpicture/v2"
-	"github.com/go-flac/flacvorbis/v2"
-	goflac "github.com/go-flac/go-flac/v2"
 )
 
 var tickerDuration = config.NewLoader("thirdparty.gd.httpDuration")
@@ -105,20 +101,19 @@ func PersistentMusic(ctx context.Context, savePath string, music Music) (string,
 	}
 
 	// 下载歌曲
-	reader, err := DownloadMusic(ctx, music)
+	reader, extension, err := DownloadMusic(ctx, music)
 	if err != nil {
 		return "", "", err
 	}
 
 	// 修改歌曲元数据
-	flacFile, err := modifyMusicMeta(ctx, reader, music)
+	musicReader, err := modifyMusicMeta(ctx, reader, music, extension)
 	if err != nil {
 		return "", "", err
 	}
-	defer flacFile.Close()
 
 	// 保存修改后的歌曲
-	musicName := fmt.Sprintf("%s - %s.%s", music.Artist[0], music.Name, "flac")
+	musicName := fmt.Sprintf("%s - %s.%s", music.Artist[0], music.Name, extension)
 	musicPath := filepath.Join(savePath, musicName)
 	file, err := os.OpenFile(musicPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
@@ -126,7 +121,7 @@ func PersistentMusic(ctx context.Context, savePath string, music Music) (string,
 	}
 	defer file.Close()
 
-	_, err = flacFile.WriteTo(file)
+	_, err = io.Copy(file, musicReader)
 	if err != nil {
 		return "", "", errors.Wrapf(err, "保存最终文件[%s]失败", musicPath)
 	}
@@ -178,65 +173,65 @@ func DownloadMusicPic(ctx context.Context, music Music) (io.Reader, string, erro
 }
 
 // DownloadMusicLyric 下载音乐歌词
-func DownloadMusicLyric(ctx context.Context, music Music) (io.Reader, error) {
+func DownloadMusicLyric(ctx context.Context, music Music) (string, error) {
 	b, err := tickerHttpGet(ctx, gdURL.Get(), http.Header{}, neturl.Values{
 		"types":  []string{"lyric"},
 		"source": []string{music.Source},
 		"id":     []string{string(music.LyricId)},
 	})
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	var musicLyric MusicLyric
 	err = json.Unmarshal(b, &musicLyric)
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return "", errors.WithStack(err)
 	}
 	if len(musicLyric.Lyric) == 0 {
-		return nil, errors.Errorf("获取歌曲歌词失败，resp: %s", string(b))
+		return "", errors.Errorf("获取歌曲歌词失败，resp: %s", string(b))
 	}
-	return strings.NewReader(musicLyric.Lyric), nil
+	return musicLyric.Lyric, nil
 }
 
 // DownloadMusic 下载音乐
-func DownloadMusic(ctx context.Context, music Music) (io.Reader, error) {
+func DownloadMusic(ctx context.Context, music Music) (io.Reader, string, error) {
 	b, err := tickerHttpGet(ctx, gdURL.Get(), http.Header{}, neturl.Values{
 		"types":  []string{"url"},
 		"source": []string{music.Source},
 		"id":     []string{string(music.Id)},
 	})
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 
 	var musicURL MusicURL
 	err = json.Unmarshal(b, &musicURL)
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, "", errors.WithStack(err)
 	}
 	if len(musicURL.Url) == 0 {
-		return nil, errors.Errorf("获取歌曲下载链接失败，resp: %s", string(b))
+		return nil, "", errors.Errorf("获取歌曲下载链接失败，resp: %s", string(b))
 	}
 
 	extension := getExtension(musicURL.Url)
-	if extension != "flac" {
-		return nil, errors.Errorf("后缀不是flac，resp: %s", string(b))
+	if extension != "flac" && extension != "mp3" {
+		return nil, "", errors.Errorf("后缀不是flac或mp3，resp: %s", string(b))
 	}
 
 	// 下载歌曲
 	resp, err := http.Get(musicURL.Url)
 	if err != nil {
-		return nil, errors.WithMessage(err, "下载歌曲失败")
+		return nil, "", errors.WithMessage(err, "下载歌曲失败")
 	}
 	defer resp.Body.Close()
 
 	var buf bytes.Buffer
 	_, err = io.Copy(&buf, resp.Body)
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, "", errors.WithStack(err)
 	}
-	return &buf, nil
+	return &buf, extension, nil
 }
 
 func getExtension(filename string) string {
@@ -286,73 +281,52 @@ func calculateFileMD5(filePath string) (string, error) {
 	return fmt.Sprintf("%x", hash.Sum(nil)), nil
 }
 
-func modifyMusicMeta(ctx context.Context, reader io.Reader, music Music) (*goflac.File, error) {
-	flacFile, err := goflac.ParseBytes(reader)
-	if err != nil {
-		return nil, errors.WithStack(err)
-	}
-
-	var vorbisComment *flacvorbis.MetaDataBlockVorbisComment
-	var cmtIdx int
-	for idx, block := range flacFile.Meta {
-		if block.Type == goflac.VorbisComment {
-			vorbisComment, err = flacvorbis.ParseFromMetaDataBlock(*block)
-			if err != nil {
-				return nil, errors.WithStack(err)
-			}
-			cmtIdx = idx
+func modifyMusicMeta(ctx context.Context, reader io.Reader, music Music, extension string) (io.Reader, error) {
+	var handler MusicMetaDataHandler
+	var err error
+	if extension == "flac" {
+		handler, err = NewFlacMusicMetaDataHandler(music, reader)
+		defer handler.Close()
+		if err != nil {
+			return nil, err
 		}
+	} else if extension == "mp3" {
+		handler, err = NewMp3MusicMetaDataHandler(music, reader)
+		defer handler.Close()
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		return nil, errors.Errorf("unsuppor file format: %s", extension)
 	}
-	vorbisComment = flacvorbis.New()
-	vorbisComment.Add(flacvorbis.FIELD_TITLE, music.Name)
-	vorbisComment.Add(flacvorbis.FIELD_ALBUM, music.Album)
-	for _, artist := range music.Artist {
-		vorbisComment.Add(flacvorbis.FIELD_ARTIST, artist)
-	}
-	vorbisComment.Add("SOURCE", music.Source)
-	vorbisComment.Add("MUSIC_ID", string(music.Id))
-
-	// 添加歌词
-	lyricReader, err := DownloadMusicLyric(ctx, music)
+	err = handler.AddCommentMetaData()
 	if err != nil {
 		return nil, err
 	}
-	lyric, err := io.ReadAll(lyricReader)
+	// 添加歌词
+	lyric, err := DownloadMusicLyric(ctx, music)
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, err
 	}
-	vorbisComment.Add("LYRICS", string(lyric))
+	err = handler.AddLyric(lyric)
+	if err != nil {
+		return nil, err
+	}
+	// 添加图片
 	picReader, picExtension, err := DownloadMusicPic(ctx, music)
 	if err != nil {
 		return nil, err
 	}
-	pic, err := io.ReadAll(picReader)
-	if err != nil {
-		return nil, errors.WithStack(err)
-	}
-
-	// 创建图片元数据块
 	if picExtension != "jpeg" && picExtension != "png" {
 		return nil, errors.Errorf("not valid pic format: %s\n", picExtension)
 	}
-	picture, err := flacpicture.NewFromImageData(
-		flacpicture.PictureTypeFrontCover,
-		"Front cover",
-		pic,
-		"image/"+picExtension,
-	)
+	err = handler.AddPic(picReader, picExtension)
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, err
 	}
-	picturemeta := picture.Marshal()
-	flacFile.Meta = append(flacFile.Meta, &picturemeta)
-
-	// 重新生成文件
-	cmtsmeta := vorbisComment.Marshal()
-	if cmtIdx > 0 {
-		flacFile.Meta[cmtIdx] = &cmtsmeta
-	} else {
-		flacFile.Meta = append(flacFile.Meta, &cmtsmeta)
+	musicReader, err := handler.toReader()
+	if err != nil {
+		return nil, err
 	}
-	return flacFile, nil
+	return musicReader, nil
 }

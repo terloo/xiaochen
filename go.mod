@@ -4,6 +4,7 @@ go 1.19
 
 require (
 	github.com/Lofanmi/chinese-calendar-golang v0.0.0-20211214151323-ef5cb443e55e
+	github.com/bogem/id3v2 v1.2.0
 	github.com/coocood/freecache v1.2.4
 	github.com/fsnotify/fsnotify v1.7.0
 	github.com/go-flac/flacpicture/v2 v2.0.2
