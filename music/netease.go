@@ -5,7 +5,6 @@ import (
 	"log"
 	"strconv"
 	"strings"
-	"sync"
 
 	"github.com/google/uuid"
 	"github.com/robfig/cron/v3"
@@ -19,30 +18,12 @@ import (
 var uid = config.NewLoader("thirdparty.netease.uid")
 var savePath = config.NewLoader("thirdparty.gd.savePath")
 
-func SingletonJob() cron.JobWrapper {
-	var m sync.Mutex
-	return func(j cron.Job) cron.Job {
-		var running bool
-		return cron.FuncJob(func() {
-			m.Lock()
-			defer m.Unlock()
-			if running {
-				return
-			}
-			running = true
-			defer func() { running = false }()
-			j.Run()
-		})
-	}
-}
-
 func StartPeriodNetease(ctx context.Context) {
 	printfLogger := cron.VerbosePrintfLogger(log.New(log.Writer(), "[period_netease]  ", log.LstdFlags|log.Lshortfile|log.Lmicroseconds))
 	c := cron.New(
 		cron.WithSeconds(),
 		cron.WithLogger(printfLogger),
-		cron.WithChain(cron.Recover(printfLogger)),
-		cron.WithChain(SingletonJob()), // 防止重叠执行
+		cron.WithChain(cron.Recover(printfLogger), cron.SkipIfStillRunning(printfLogger)),
 	)
 
 	c.AddFunc("0 */5 * * * *", func() {
