@@ -155,7 +155,7 @@ func DownloadMusicPic(ctx context.Context, music Music) (io.Reader, string, erro
 		return nil, "", errors.WithStack(err)
 	}
 	if len(musicPic.Url) == 0 {
-		return nil, "", errors.New("获取歌曲封面链接失败")
+		return nil, "", errors.Errorf("获取歌曲封面链接失败，resp: %s", string(b))
 	}
 
 	resp, err := http.Get(musicPic.Url)
@@ -194,7 +194,7 @@ func DownloadMusicLyric(ctx context.Context, music Music) (io.Reader, error) {
 		return nil, errors.WithStack(err)
 	}
 	if len(musicLyric.Lyric) == 0 {
-		return nil, errors.New("获取歌曲歌词失败")
+		return nil, errors.Errorf("获取歌曲歌词失败，resp: %s", string(b))
 	}
 	return strings.NewReader(musicLyric.Lyric), nil
 }
@@ -216,18 +216,18 @@ func DownloadMusic(ctx context.Context, music Music) (io.Reader, error) {
 		return nil, errors.WithStack(err)
 	}
 	if len(musicURL.Url) == 0 {
-		return nil, errors.New("获取歌曲下载链接失败")
+		return nil, errors.Errorf("获取歌曲下载链接失败，resp: %s", string(b))
 	}
 
 	extension := getExtension(musicURL.Url)
 	if extension != "flac" {
-		return nil, errors.New("后缀不是flac")
+		return nil, errors.Errorf("后缀不是flac，resp: %s", string(b))
 	}
 
 	// 下载歌曲
 	resp, err := http.Get(musicURL.Url)
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, errors.WithMessage(err, "下载歌曲失败")
 	}
 	defer resp.Body.Close()
 

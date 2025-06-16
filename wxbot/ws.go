@@ -43,7 +43,7 @@ func StartReceiveMessage(ctx context.Context) <-chan FormattedMessage {
 						// panic后重新建立连接
 						ws, _, err = websocket.DefaultDialer.DialContext(ctx, url, nil)
 						if err != nil {
-							log.Fatal(err)
+							log.Fatalf("reconnect websocket error: %+v", err)
 						}
 						log.Println("reconnect websocket")
 					}
@@ -51,13 +51,13 @@ func StartReceiveMessage(ctx context.Context) <-chan FormattedMessage {
 
 				message, err := ReadMessage(ws)
 				if err != nil {
-					log.Println(err)
+					log.Printf("read message error: %+v\n", err)
 					return
 				}
 				for _, data := range message.Data {
 					formattedMessage, err := FormatMessage(data)
 					if err != nil {
-						log.Println(err)
+						log.Printf("format message error: %+v\n", err)
 						return
 					}
 					if formattedMessage.Self && !formattedMessage.At {
