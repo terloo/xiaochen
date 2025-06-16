@@ -7,6 +7,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/google/uuid"
 	"github.com/robfig/cron/v3"
 	"github.com/terloo/xiaochen/config"
 	"github.com/terloo/xiaochen/storage"
@@ -110,36 +111,58 @@ func PersistentLikeMusic(ctx context.Context) {
 				if err != nil {
 					log.Printf("get db data error: %+v\n", err)
 				}
-				if record != nil && record.Downloaded {
-					log.Printf("music [%v %s] has downloaded\n", music.Artist, music.Name)
+				if record != nil && (record.Downloaded || record.DownloadRetryCount >= 10) {
+					log.Printf("music [%v %s] has downloaded or retch max retry count\n", music.Artist, music.Name)
 					continue
 				}
 
-				log.Printf("seeking music [%v %s] gd info", music.Artist, music.Name)
-				gdMusic, err := gd.GetMusic(ctx, strconv.Itoa(music.Id), models.MusicSourceNetease.String(), music.Name, music.Artist[0])
+				// 下载歌曲
+				gdMusic, fileName, md5, err := persistentLikeMusicInternal(ctx, music)
 				if err != nil {
-					log.Printf("get dg music info error: %+v\n", err)
-					continue
+					log.Printf("persistent music [%v %s] error: %+v\n", music.Artist, music.Name, err)
 				}
-				fileName, md5, err := gd.PersistentMusic(ctx, savePath.Get(), *gdMusic)
-				if err != nil {
-					log.Printf("persistent dg music file error: %+v\n", err)
-					continue
+
+				var musicRecord *models.Music
+				if err == nil {
+					musicRecord = &models.Music{
+						MusicId:             string(gdMusic.Id),
+						Name:                gdMusic.Name,
+						Artist:              strings.Join(gdMusic.Artist, ","),
+						Album:               gdMusic.Album,
+						PicId:               string(gdMusic.PicId),
+						LyricId:             string(gdMusic.LyricId),
+						Source:              models.MusicSource(gdMusic.Source),
+						FileName:            fileName,
+						MD5:                 md5,
+						DownloadChannel:     models.MusicDownloadChannelNeteaseLike,
+						Downloaded:          true,
+						DownloadRetryCount:  0,
+						DownloadErrorReason: "",
+					}
+				} else {
+					retryCount := 0
+					if record != nil {
+						retryCount = record.DownloadRetryCount + 1
+					}
+					musicRecord = &models.Music{
+						MusicId:             strconv.Itoa(music.Id),
+						Name:                music.Name,
+						Artist:              strings.Join(music.Artist, ","),
+						Album:               music.Album,
+						PicId:               "",
+						LyricId:             "",
+						Source:              models.MusicSourceNetease,
+						FileName:            strings.Replace(uuid.New().String(), "-", "", -1),
+						MD5:                 "",
+						DownloadChannel:     models.MusicDownloadChannelNeteaseLike,
+						Downloaded:          false,
+						DownloadRetryCount:  retryCount,
+						DownloadErrorReason: err.Error(),
+					}
 				}
+
 				// 保存数据库记录
-				err = storage.MusicRepo.Upsert(&models.Music{
-					MusicId:         string(gdMusic.Id),
-					Name:            gdMusic.Name,
-					Artist:          strings.Join(gdMusic.Artist, ","),
-					Album:           gdMusic.Album,
-					PicId:           string(gdMusic.PicId),
-					LyricId:         string(gdMusic.LyricId),
-					Source:          models.MusicSource(gdMusic.Source),
-					FileName:        fileName,
-					MD5:             md5,
-					DownloadChannel: models.MusicDownloadChannelNeteaseLike,
-					Downloaded:      true,
-				})
+				err = storage.MusicRepo.Upsert(musicRecord)
 				if err != nil {
 					log.Printf("persistent dg music db data error: %+v\n", err)
 					continue
@@ -147,4 +170,23 @@ func PersistentLikeMusic(ctx context.Context) {
 			}
 		}
 	}
+}
+
+func persistentLikeMusicInternal(ctx context.Context, music netease.Music) (*gd.Music, string, string, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, "", "", err
+	}
+
+	log.Printf("seeking music [%v %s] gd info", music.Artist, music.Name)
+	gdMusic, err := gd.GetMusic(ctx, strconv.Itoa(music.Id), models.MusicSourceNetease.String(), music.Name, music.Artist[0])
+	if err != nil {
+		log.Printf("get dg music info error: %+v\n", err)
+		return nil, "", "", err
+	}
+	fileName, md5, err := gd.PersistentMusic(ctx, savePath.Get(), *gdMusic)
+	if err != nil {
+		log.Printf("persistent dg music file error: %+v\n", err)
+		return nil, "", "", err
+	}
+	return gdMusic, fileName, md5, nil
 }

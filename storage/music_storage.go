@@ -24,16 +24,7 @@ func (r *musicStorage) Create(music *models.Music) error {
 func (r *musicStorage) Upsert(music *models.Music) error {
 	return r.db.Clauses(clause.OnConflict{
 		Columns: []clause.Column{{Name: "music_id"}, {Name: "source"}},
-		DoUpdates: []clause.Assignment{{
-			Column: clause.Column{Name: "downloaded"},
-			Value:  music.Downloaded,
-		}, {
-			Column: clause.Column{Name: "md5"},
-			Value:  music.MD5,
-		}, {
-			Column: clause.Column{Name: "file_name"},
-			Value:  music.FileName,
-		}},
+		UpdateAll: true,
 	}).Create(music).Error
 }
 

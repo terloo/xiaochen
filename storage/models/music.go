@@ -6,17 +6,19 @@ import (
 
 type Music struct {
 	gorm.Model
-	MusicId         string               `gorm:"index;type:varchar(100);uniqueIndex:uniq_id_source;not null"`
-	Name            string               `gorm:"index;type:varchar(100)"`
-	Artist          string               `gorm:"index;type:varchar(300)"`
-	Album           string               `gorm:"index;type:varchar(100)"`
-	PicId           string               `gorm:"index;type:varchar(100)"`
-	LyricId         string               `gorm:"index;type:varchar(100)"`
-	Source          MusicSource          `gorm:"index;type:varchar(30);uniqueIndex:uniq_id_source;not null"`
-	FileName        string               `gorm:"uniqueIndex;type:varchar(150);"`
-	MD5             string               `gorm:"index;type:varchar(32)"`
-	DownloadChannel MusicDownloadChannel `gorm:"index;type:varchar(30)"`
-	Downloaded      bool                 `gorm:"index;default:0"`
+	MusicId             string               `gorm:"index;type:varchar(100);uniqueIndex:uniq_id_source;not null"`
+	Name                string               `gorm:"index;type:varchar(100)"`
+	Artist              string               `gorm:"index;type:varchar(300)"`
+	Album               string               `gorm:"index;type:varchar(100)"`
+	PicId               string               `gorm:"index;type:varchar(100)"`
+	LyricId             string               `gorm:"index;type:varchar(100)"`
+	Source              MusicSource          `gorm:"index;type:varchar(30);uniqueIndex:uniq_id_source;not null"`
+	FileName            string               `gorm:"uniqueIndex;type:varchar(150);"`
+	MD5                 string               `gorm:"index;type:varchar(32)"`
+	DownloadChannel     MusicDownloadChannel `gorm:"index;type:varchar(30)"`
+	Downloaded          bool                 `gorm:"index;default:0"`
+	DownloadRetryCount  int                  `gorm:"type:int(11)"`
+	DownloadErrorReason string               `gorm:"type:varchar(500);default:0"`
 }
 
 type MusicSource string
