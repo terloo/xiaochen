@@ -21,6 +21,7 @@ func init() {
 		Handlers: []command.Handler{
 			&command.Birthday{},
 			&command.Weather{},
+			&command.Music{},
 		},
 		CommonHandler: CommonHandler{
 			CareSender: []string{family.FamilyChatroomWxid, family.TestChatroomWxid},
