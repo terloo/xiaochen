@@ -104,31 +104,37 @@ func (h *FlacMusicMetaDataHandler) Close() error {
 }
 
 type Mp3MusicMetaDataHandler struct {
-	Music Music
-	tag   *id3v2.Tag
+	Music     Music
+	tag       *id3v2.Tag
+	audioData []byte
 }
 
 var _ MusicMetaDataHandler = (*Mp3MusicMetaDataHandler)(nil)
 
 func NewMp3MusicMetaDataHandler(music Music, reader io.Reader) (*Mp3MusicMetaDataHandler, error) {
-	tag, err := id3v2.ParseReader(reader, id3v2.Options{Parse: true})
+	var buffer bytes.Buffer
+	_, err := io.Copy(&buffer, reader)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	// 读取元数据长度
+	tag, err := id3v2.ParseReader(&buffer, id3v2.Options{Parse: true})
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
 	tag.SetVersion(4)
+
 	return &Mp3MusicMetaDataHandler{
-		Music: music,
-		tag:   tag,
+		Music:     music,
+		tag:       id3v2.NewEmptyTag(),
+		audioData: buffer.Bytes()[tag.Size():], // 记录剩余的音频数据
 	}, nil
 }
 
 func (h *Mp3MusicMetaDataHandler) AddCommentMetaData() error {
 	h.tag.SetTitle(h.Music.Name)
-	artistsFrame := id3v2.TextFrame{
-		Encoding: id3v2.EncodingUTF8,
-		Text:     strings.Join(h.Music.Artist, "\n"),
-	}
-	h.tag.AddFrame(h.tag.CommonID("Artists"), artistsFrame)
+	h.tag.SetArtist(strings.Join(h.Music.Artist, ";"))
 	h.tag.SetAlbum(h.Music.Album)
 	return nil
 }
@@ -162,7 +168,13 @@ func (h *Mp3MusicMetaDataHandler) AddPic(picReader io.Reader, picExtension strin
 
 func (h *Mp3MusicMetaDataHandler) toReader() (io.Reader, error) {
 	var buffer bytes.Buffer
+	// 先写tag数据
 	_, err := h.tag.WriteTo(&buffer)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+	// 再写音频数据
+	_, err = buffer.Write(h.audioData)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
