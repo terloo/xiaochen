@@ -23,7 +23,7 @@ func (r *musicStorage) Create(music *models.Music) error {
 
 func (r *musicStorage) Upsert(music *models.Music) error {
 	return r.db.Clauses(clause.OnConflict{
-		Columns: []clause.Column{{Name: "music_id"}, {Name: "source"}},
+		Columns:   []clause.Column{{Name: "music_id"}, {Name: "source"}},
 		UpdateAll: true,
 	}).Create(music).Error
 }

@@ -7,10 +7,10 @@ import (
 	"time"
 
 	"github.com/terloo/almanac"
-	"github.com/terloo/xiaochen/family"
-	"github.com/terloo/xiaochen/notify/period"
+	"github.com/terloo/xiaochen/service/family"
+	"github.com/terloo/xiaochen/service/notify/period"
+	"github.com/terloo/xiaochen/thirdparty/wxbot"
 	"github.com/terloo/xiaochen/util"
-	"github.com/terloo/xiaochen/wxbot"
 )
 
 func TestReport(t *testing.T) {

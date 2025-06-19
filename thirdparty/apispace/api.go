@@ -10,9 +10,9 @@ import (
 
 	"github.com/Lofanmi/chinese-calendar-golang/lunar"
 	"github.com/pkg/errors"
+	"github.com/terloo/xiaochen/service/family"
 
 	"github.com/terloo/xiaochen/client"
-	"github.com/terloo/xiaochen/family"
 	"github.com/terloo/xiaochen/util"
 )
 

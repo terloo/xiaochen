@@ -3,7 +3,7 @@ module github.com/terloo/xiaochen
 go 1.19
 
 require (
-	github.com/Lofanmi/chinese-calendar-golang v0.0.0-20211214151323-ef5cb443e55e
+	github.com/Lofanmi/chinese-calendar-golang v0.0.0-20250312143717-353343ff62ba
 	github.com/bogem/id3v2 v1.2.0
 	github.com/coocood/freecache v1.2.4
 	github.com/fsnotify/fsnotify v1.7.0
@@ -13,8 +13,8 @@ require (
 	github.com/google/uuid v1.4.0
 	github.com/gorilla/websocket v1.5.1
 	github.com/pkg/errors v0.9.1
-	github.com/robfig/cron/v3 v3.0.0
-	github.com/sashabaranov/go-openai v1.36.1
+	github.com/robfig/cron/v3 v3.0.1
+	github.com/sashabaranov/go-openai v1.40.2
 	github.com/spf13/viper v1.18.2
 	github.com/terloo/almanac v0.0.0-20240515165319-342b420d4804
 	golang.org/x/exp v0.0.0-20230905200255-921286631fa9

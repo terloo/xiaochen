@@ -103,7 +103,7 @@ func PersistentMusic(ctx context.Context, savePath string, music Music) (string,
 	// 下载歌曲
 	reader, extension, err := DownloadMusic(ctx, music)
 	if err != nil {
-		return "", "", err
+		return "", "", errors.WithMessagef(err, "下载歌曲 [%s - %s]失败", music.Artist[0], music.Name)
 	}
 
 	// 修改歌曲元数据
@@ -222,7 +222,7 @@ func DownloadMusic(ctx context.Context, music Music) (io.Reader, string, error) 
 	// 下载歌曲
 	resp, err := http.Get(musicURL.Url)
 	if err != nil {
-		return nil, "", errors.WithMessage(err, "下载歌曲失败")
+		return nil, "", errors.Wrap(err, "下载歌曲失败")
 	}
 	defer resp.Body.Close()
 
