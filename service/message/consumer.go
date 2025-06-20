@@ -12,12 +12,13 @@ func StartConsumer(ctx context.Context) {
 	if err := ctx.Err(); err != nil {
 		return
 	}
+	messageCh := wxbot.StartReceiveMessage(ctx)
 
 	for {
 		select {
 		case <-ctx.Done():
 			return
-		case message := <-wxbot.StartReceiveMessage(ctx):
+		case message := <-messageCh:
 			for _, h := range handlers {
 				if h.Support(message) {
 					err := h.Handle(ctx, message)

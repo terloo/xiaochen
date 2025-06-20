@@ -18,6 +18,7 @@ func StartReceiveMessage(ctx context.Context) <-chan FormattedMessage {
 	if err != nil {
 		log.Fatal(err)
 	}
+	log.Println("start receive message")
 
 	resultChan := make(chan FormattedMessage, 10)
 
