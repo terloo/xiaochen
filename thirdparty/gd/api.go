@@ -22,6 +22,7 @@ import (
 )
 
 var tickerDuration = config.NewLoader("thirdparty.gd.httpDuration")
+var savePathConfig = config.NewLoader("thirdparty.gd.savePath")
 
 var httpGetTicker = time.NewTicker(time.Duration(tickerDuration.GetInt()) * time.Second)
 
@@ -51,11 +52,11 @@ func SearchMusic(ctx context.Context, source string, search string, count int, p
 }
 
 // GetMusic 通过id，以及歌名、作者、获取对应的music对象
-func GetMusic(ctx context.Context, id string, source string, name string, artist string) (*Music, error) {
+func GetMusic(ctx context.Context, id string, source string, name string, artist []string, album string) (*Music, error) {
 	if len(name) == 0 && len(artist) == 0 {
 		return nil, errors.New("no enough search info")
 	}
-	search := fmt.Sprintf("%s %s", name, artist)
+	search := fmt.Sprintf("%s %s %s", name, strings.Join(artist, " "), album)
 	// 遍历20页
 	for i := 0; i < 20; i++ {
 		musics, err := SearchMusic(ctx, source, search, 20, i+1)
@@ -71,25 +72,37 @@ func GetMusic(ctx context.Context, id string, source string, name string, artist
 			}
 		}
 	}
-	return nil, errors.Errorf("music not found, id: %s, source: %s, name: %s, artist %s", id, source, name, artist)
+	return nil, errors.Errorf("music not found, id: %s, source: %s, name: %s, artist: %v, album: %v", id, source, name, artist, album)
 }
 
 // PersistentMusic 下载并整理歌词元数据，持久化到指定目录中
-func PersistentMusic(ctx context.Context, savePath string, music Music) (string, string, error) {
+func PersistentMusic(ctx context.Context, music Music) (string, string, error) {
+
+	// 路径处理
+	savePath := savePathConfig.Get()
+	savePath = filepath.Clean(savePath)
+	if !filepath.IsAbs(savePath) {
+		wd, err := os.Getwd()
+		if err != nil {
+			return "", "", errors.Wrap(err, "读取工作目录失败")
+		}
+		savePath = filepath.Join(wd, savePath)
+	}
+
 	// 目录判断
 	info, err := os.Stat(savePath)
 	if err != nil {
 		if !os.IsNotExist(err) {
-			return "", "", errors.Wrap(err, "读取目录失败")
+			return "", "", errors.Wrapf(err, "目录%s已存在，但Stat失败", savePath)
 		}
 		err := os.MkdirAll(savePath, os.ModeDir|0755)
 		if err != nil {
-			return "", "", errors.Wrap(err, "创建目录失败")
+			return "", "", errors.Wrapf(err, "创建目录%s失败", savePath)
 		}
 	}
 	info, err = os.Stat(savePath)
 	if err != nil {
-		return "", "", errors.Wrap(err, "读取目录失败")
+		return "", "", errors.Wrapf(err, "Stat目录%s失败", savePath)
 	}
 	if !info.IsDir() {
 		return "", "", errors.Errorf("%s 不是目录", savePath)
@@ -97,7 +110,7 @@ func PersistentMusic(ctx context.Context, savePath string, music Music) (string,
 
 	_, err = os.ReadDir(savePath)
 	if err != nil {
-		return "", "", errors.Wrap(err, "读取目录失败")
+		return "", "", errors.Wrapf(err, "读取目录%s失败", savePath)
 	}
 
 	// 下载歌曲

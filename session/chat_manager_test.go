@@ -56,7 +56,7 @@ func TestSessionManager(t *testing.T) {
 				t.Fatal(err)
 			}
 		case openai.ChatMessageRoleAssistant:
-			err := contextManager.AddAssistantRoleContent(ctx, exceptMessage.Content)
+			err := contextManager.AddAssistantRoleContent(ctx, exceptMessage.Content, nil)
 			if err != nil {
 				t.Fatal(err)
 			}

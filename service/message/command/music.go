@@ -6,13 +6,10 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
-	"github.com/terloo/xiaochen/config"
 	"github.com/terloo/xiaochen/storage/models"
 	"github.com/terloo/xiaochen/thirdparty/gd"
 	"github.com/terloo/xiaochen/thirdparty/wxbot"
 )
-
-var savePath = config.NewLoader("thirdparty.gd.savePath")
 
 type Music struct {
 }
@@ -41,7 +38,7 @@ func (m *Music) Exec(ctx context.Context, caller string, args []string) error {
 
 	for _, music := range musics {
 		_ = wxbot.SendMsg(ctx, fmt.Sprintf("正在下载 [%s - %s]", music.Artist[0], music.Name), caller)
-		musicName, md5, err := gd.PersistentMusic(ctx, savePath.Get(), *music)
+		musicName, md5, err := gd.PersistentMusic(ctx, *music)
 		if err != nil {
 			return errors.Wrapf(err, "persisten music [%s - %s] error\n", music.Artist[0], music.Name)
 		}

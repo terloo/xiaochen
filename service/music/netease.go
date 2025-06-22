@@ -16,7 +16,6 @@ import (
 )
 
 var uid = config.NewLoader("thirdparty.netease.uid")
-var savePath = config.NewLoader("thirdparty.gd.savePath")
 
 func StartPeriodNetease(ctx context.Context) {
 	printfLogger := cron.VerbosePrintfLogger(log.New(log.Writer(), "[period_netease]  ", log.LstdFlags|log.Lshortfile|log.Lmicroseconds))
@@ -159,12 +158,12 @@ func persistentLikeMusicInternal(ctx context.Context, music netease.Music) (*gd.
 	}
 
 	log.Printf("seeking music [%v %s] gd info", music.Artist, music.Name)
-	gdMusic, err := gd.GetMusic(ctx, strconv.Itoa(music.Id), models.MusicSourceNetease.String(), music.Name, music.Artist[0])
+	gdMusic, err := gd.GetMusic(ctx, strconv.Itoa(music.Id), models.MusicSourceNetease.String(), music.Name, music.Artist, music.Album)
 	if err != nil {
 		log.Printf("get dg music info error: %+v\n", err)
 		return nil, "", "", err
 	}
-	fileName, md5, err := gd.PersistentMusic(ctx, savePath.Get(), *gdMusic)
+	fileName, md5, err := gd.PersistentMusic(ctx, *gdMusic)
 	if err != nil {
 		log.Printf("persistent dg music file error: %+v\n", err)
 		return nil, "", "", err

@@ -1,9 +1,9 @@
 .vscode
 .idea
 
-./xiaochen
 log/
 pid
 
-xiaochen.yaml
-xiaochen.db
+./xiaochen
+./xiaochen.yaml
+./xiaochen.db

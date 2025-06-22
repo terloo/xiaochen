@@ -16,7 +16,8 @@ const OriginWxbot Origin = "ChatOriginWxbot"
 type ContextManger interface {
 	AddDeveloperRoleContent(ctx context.Context, content string) error
 	AddUserRoleContent(ctx context.Context, content string) error
-	AddAssistantRoleContent(ctx context.Context, content string) error
+	AddAssistantRoleContent(ctx context.Context, content string, toolCalls []openai.ToolCall) error
+	AddToolRoleContent(ctx context.Context, content string, toolCallId string) error
 	GetAllRoleContent(ctx context.Context) ([]openai.ChatCompletionMessage, error)
 }
 

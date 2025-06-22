@@ -6,8 +6,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/mark3labs/mcp-go/client"
+	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/terloo/almanac"
 	"github.com/terloo/xiaochen/service/family"
+	"github.com/terloo/xiaochen/service/music"
 	"github.com/terloo/xiaochen/service/notify/period"
 	"github.com/terloo/xiaochen/thirdparty/wxbot"
 	"github.com/terloo/xiaochen/util"
@@ -38,4 +41,28 @@ func TestCal(t *testing.T) {
 func TestWeather(t *testing.T) {
 	weatherNotifier := period.WeatherNotifier{}
 	weatherNotifier.Notify(context.Background(), family.TestChatroomWxid)
+}
+
+func TestNeteaseMusicLike(t *testing.T) {
+	music.PersistentLikeMusic(context.Background())
+}
+
+func TestStdioMCPClient(t *testing.T) {
+	ctx := context.Background()
+	mcpClient, err := client.NewStdioMCPClient("npx", []string{}, "-y", "howtocook-mcp")
+	if err != nil {
+		t.Fatal(err)
+	}
+	initialize, err := mcpClient.Initialize(ctx, mcp.InitializeRequest{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	log.Printf("%s\n", initialize.ServerInfo)
+	tools, err := mcpClient.ListTools(ctx, mcp.ListToolsRequest{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, tool := range tools.Tools {
+		log.Printf("name: %s, description: %s\n", tool.Name, tool.Description)
+	}
 }

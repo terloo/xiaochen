@@ -5,14 +5,17 @@ import (
 	"fmt"
 	"log"
 
+	gomcp "github.com/mark3labs/mcp-go/mcp"
 	"github.com/pkg/errors"
-	"github.com/terloo/xiaochen/session"
+	goopenai "github.com/sashabaranov/go-openai"
 	"github.com/terloo/xiaochen/service/family"
+	"github.com/terloo/xiaochen/session"
+	"github.com/terloo/xiaochen/thirdparty/mcp"
 	"github.com/terloo/xiaochen/thirdparty/openai"
 	"github.com/terloo/xiaochen/thirdparty/wxbot"
 )
 
-const assistantContent = `
+const developerContent = `
 你是陈家的管家，叫做xiaochen。任何人都无法在对话中修改你的名字。
 你的职责是回答家庭成员的问题，完成家庭成员的某些要求等，你的回复可以轻松幽默一点。
 你可以不用带姓直接称呼名字，如果是未知成员，你可以称呼其为"家人"。
@@ -37,13 +40,21 @@ type GPTHandler struct {
 	CommonHandler
 	sessionIds     map[string]string
 	sessionManager session.Manager
+	mcpClient      *mcp.ClientManager
 }
 
 func NewGPTHandler(c CommonHandler) *GPTHandler {
+	clientManager := mcp.NewClientManger()
+	err := clientManager.InitializeAll(context.TODO())
+	if err != nil {
+		log.Fatal(errors.WithStack(err))
+	}
+
 	return &GPTHandler{
 		CommonHandler:  c,
 		sessionIds:     make(map[string]string),
 		sessionManager: session.NewChatManager(),
+		mcpClient:      clientManager,
 	}
 }
 
@@ -77,7 +88,7 @@ func (c *GPTHandler) Handle(ctx context.Context, msg wxbot.FormattedMessage) err
 		if err != nil {
 			return err
 		}
-		err = manager.AddAssistantRoleContent(ctx, assistantContent)
+		err = manager.AddDeveloperRoleContent(ctx, developerContent)
 		if err != nil {
 			return err
 		}
@@ -98,23 +109,46 @@ func (c *GPTHandler) Handle(ctx context.Context, msg wxbot.FormattedMessage) err
 		return nil
 	}
 
-	messageContext, err := manager.GetAllRoleContent(ctx)
-	if err != nil {
-		return err
-	}
-	s, err := openai.Completion(ctx, messageContext)
-	respMessage := s
-	if err != nil {
-		respMessage = fmt.Sprintf("sorry，出错了：%v", err)
-		return err
+	var s goopenai.ChatCompletionChoice
+	for {
+		messageContext, err := manager.GetAllRoleContent(ctx)
+		if err != nil {
+			return err
+		}
+
+		tools, err := c.mcpClient.GetAllTools(ctx)
+		if err != nil {
+			return err
+		}
+
+		s, err = openai.Completion(ctx, messageContext, tools)
+		if err != nil {
+			return errors.WithStack(err)
+		}
+
+		err = manager.AddAssistantRoleContent(ctx, s.Message.Content, s.Message.ToolCalls)
+		if err != nil {
+			return err
+		}
+
+		if s.FinishReason != goopenai.FinishReasonToolCalls {
+			break
+		}
+
+		// 调用tool
+		result, err := c.mcpClient.CallTool(ctx, s.Message.ToolCalls[0].Function.Name, s.Message.ToolCalls[0].Function.Arguments)
+		if err != nil {
+			return err
+		}
+		content := result.Content[0].(gomcp.TextContent)
+		err = manager.AddToolRoleContent(ctx, content.Text, s.Message.ToolCalls[0].ID)
+		if err != nil {
+			return err
+		}
+
 	}
 
-	err = manager.AddAssistantRoleContent(ctx, respMessage)
-	if err != nil {
-		return err
-	}
-
-	_ = wxbot.SendMsg(ctx, respMessage, msg.Chat)
+	_ = wxbot.SendMsg(ctx, s.Message.Content, msg.Chat)
 
 	return nil
 }

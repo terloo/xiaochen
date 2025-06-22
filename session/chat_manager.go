@@ -41,15 +41,47 @@ func NewChat(origin Origin, sender string, receiver string) *ChatContextManager 
 }
 
 func (c *ChatContextManager) AddDeveloperRoleContent(ctx context.Context, content string) error {
-	return c.addRoleContent(ctx, content, openai.ChatMessageRoleDeveloper)
+	return c.addRoleContent(ctx, content, openai.ChatMessageRoleSystem)
 }
 
 func (c *ChatContextManager) AddUserRoleContent(ctx context.Context, content string) error {
 	return c.addRoleContent(ctx, content, openai.ChatMessageRoleUser)
 }
 
-func (c *ChatContextManager) AddAssistantRoleContent(ctx context.Context, content string) error {
-	return c.addRoleContent(ctx, content, openai.ChatMessageRoleAssistant)
+func (c *ChatContextManager) AddAssistantRoleContent(ctx context.Context, content string, toolCalls []openai.ToolCall) error {
+	key := c.generateMessageCacheKey()
+	message := openai.ChatCompletionMessage{
+		Role:      openai.ChatMessageRoleAssistant,
+		Content:   content,
+		ToolCalls: toolCalls,
+	}
+	marshal, err := json.Marshal(message)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+	err = c.cache.SetValue(ctx, key, marshal)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c *ChatContextManager) AddToolRoleContent(ctx context.Context, content string, toolCallId string) error {
+	key := c.generateMessageCacheKey()
+	message := openai.ChatCompletionMessage{
+		Role:       openai.ChatMessageRoleTool,
+		Content:    content,
+		ToolCallID: toolCallId,
+	}
+	marshal, err := json.Marshal(message)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+	err = c.cache.SetValue(ctx, key, marshal)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (c *ChatContextManager) addRoleContent(ctx context.Context, content string, role string) error {

@@ -7,7 +7,7 @@ import (
 	"github.com/sashabaranov/go-openai"
 )
 
-func Completion(ctx context.Context, completionMessages []openai.ChatCompletionMessage) (string, error) {
+func Completion(ctx context.Context, completionMessages []openai.ChatCompletionMessage, tools []openai.Tool) (openai.ChatCompletionChoice, error) {
 	config := openai.DefaultConfig(openKey.Get())
 	config.BaseURL = openHost + "v1"
 
@@ -19,16 +19,17 @@ func Completion(ctx context.Context, completionMessages []openai.ChatCompletionM
 			Model:       ModelName,
 			Messages:    completionMessages,
 			Temperature: 0.8,
+			Tools:       tools,
 		},
 	)
 
 	if err != nil {
-		return "", errors.Wrap(err, "ChatCompletion error")
+		return openai.ChatCompletionChoice{}, errors.Wrap(err, "ChatCompletion error")
 	}
 
 	if len(resp.Choices) == 0 {
-		return "", errors.New("ChatCompletion no content")
+		return openai.ChatCompletionChoice{}, errors.New("ChatCompletion no content")
 	}
 
-	return resp.Choices[0].Message.Content, nil
+	return resp.Choices[0], nil
 }
