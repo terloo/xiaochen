@@ -94,3 +94,27 @@ func TestMCPHandler2(t *testing.T) {
 		t.Fatalf("%+v\n", err)
 	}
 }
+
+func TestMCPHandler3(t *testing.T) {
+	ctx := context.Background()
+	handler := NewGPTHandler(CommonHandler{[]string{family.TestChatroomWxid}})
+	err := handler.Handle(ctx, wxbot.FormattedMessage{
+		Chat:    family.TestChatroomWxid,
+		Sender:  family.Families[0].Wxid,
+		Content: "@xiaochen 安排一桌10人餐，每人80元的标准，老年人居多，菜品突出家庭聚会的特点。来，安排一下。",
+		At:      true,
+	})
+	if err != nil {
+		t.Fatalf("%+v\n", err)
+	}
+	// 多tool调用
+	err = handler.Handle(ctx, wxbot.FormattedMessage{
+		Chat:    family.TestChatroomWxid,
+		Sender:  family.Families[0].Wxid,
+		Content: "@xiaochen 好那就分成两桌安排，发一下菜单吧",
+		At:      true,
+	})
+	if err != nil {
+		t.Fatalf("%+v\n", err)
+	}
+}

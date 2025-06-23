@@ -20,7 +20,7 @@ func NewLocalCache(capacity int, expireSeconds int) *LocalCache {
 
 func (l *LocalCache) SetValue(ctx context.Context, k string, v []byte) error {
 	err := l.cache.Set([]byte(k), v, l.expireSeconds)
-	return errors.WithMessagef(err, "set cache [%s]=[%s] error", k, v)
+	return errors.Wrapf(err, "set cache [%s]=[%s] error", k, v)
 }
 
 func (l *LocalCache) GetValue(ctx context.Context, k string) ([]byte, error) {

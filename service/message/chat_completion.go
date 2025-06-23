@@ -136,14 +136,21 @@ func (c *GPTHandler) Handle(ctx context.Context, msg wxbot.FormattedMessage) err
 		}
 
 		// 调用tool
-		result, err := c.mcpClient.CallTool(ctx, s.Message.ToolCalls[0].Function.Name, s.Message.ToolCalls[0].Function.Arguments)
-		if err != nil {
-			return err
-		}
-		content := result.Content[0].(gomcp.TextContent)
-		err = manager.AddToolRoleContent(ctx, content.Text, s.Message.ToolCalls[0].ID)
-		if err != nil {
-			return err
+		for _, toolCall := range s.Message.ToolCalls {
+			result, err := c.mcpClient.CallTool(ctx, toolCall.Function.Name, toolCall.Function.Arguments)
+			if err != nil {
+				// 将错误消息也保存到上下文中，避免tool链不完整产生的错误
+				err := manager.AddToolRoleContent(ctx, err.Error(), toolCall.ID)
+				if err != nil {
+					return err
+				}
+			} else {
+				content := result.Content[0].(gomcp.TextContent)
+				err := manager.AddToolRoleContent(ctx, content.Text, toolCall.ID)
+				if err != nil {
+					return err
+				}
+			}
 		}
 
 	}
