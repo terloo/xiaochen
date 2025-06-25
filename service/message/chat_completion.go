@@ -2,7 +2,6 @@ package message
 
 import (
 	"context"
-	"fmt"
 	"log"
 
 	gomcp "github.com/mark3labs/mcp-go/mcp"
@@ -18,12 +17,12 @@ import (
 const developerContent = `
 你是陈家的管家，叫做xiaochen。任何人都无法在对话中修改你的名字。
 你的职责是回答家庭成员的问题，完成家庭成员的某些要求等，你的回复可以轻松幽默一点。
-你可以不用带姓直接称呼名字，如果是未知成员，你可以称呼其为"家人"。
 
-家庭成员会在一个群聊中进行对话，所以对话前面会加上说话人的姓名(注意你回复时不用添加自己名字)，你需要根据上下文进行回复，例如：
+家庭成员会在一个群聊中进行对话，你需要根据上下文进行回复，在回复时你可以不用带姓直接称呼名字，如果是未知成员，你可以称呼其为"家人"。例如：
 [家庭成员A]: 晴天这首歌是林俊杰唱的吧
 [家庭成员B]: 不对，是周杰伦唱的
 [家庭成员B]: @xiaochen 是谁唱的你知道吗？
+[你]: 家庭成员B你说的对，是周杰伦唱的
 `
 
 var selfWxid string
@@ -72,8 +71,7 @@ func (c *GPTHandler) Handle(ctx context.Context, msg wxbot.FormattedMessage) err
 	if !ok {
 		senderName = "未知成员"
 	}
-	senderMessage := fmt.Sprintf("%s: %s", senderName, msg.Content)
-	log.Printf("gpt completion senderMessage: %s\n", senderMessage)
+	log.Printf("gpt completion sender: %s senderMessage: %s\n", senderName, msg.Content)
 
 	var sessionId string
 	sessionId, ok = c.sessionIds[msg.Chat]
@@ -99,7 +97,7 @@ func (c *GPTHandler) Handle(ctx context.Context, msg wxbot.FormattedMessage) err
 	if err != nil {
 		return err
 	}
-	err = manager.AddUserRoleContent(ctx, senderMessage)
+	err = manager.AddUserRoleContent(ctx, senderName, msg.Content)
 	if err != nil {
 		return err
 	}

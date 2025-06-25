@@ -3,7 +3,7 @@ package netease
 import (
 	"context"
 	"encoding/json"
-	"fmt"
+	"log"
 	neturl "net/url"
 	"strconv"
 	"strings"
@@ -18,7 +18,7 @@ func CheckLoginStatus(ctx context.Context) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	fmt.Println(string(b))
+	log.Println(string(b))
 	return true, nil
 }
 

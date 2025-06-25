@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"sync"
 
 	"github.com/pkg/errors"
@@ -44,8 +45,22 @@ func (c *ChatContextManager) AddDeveloperRoleContent(ctx context.Context, conten
 	return c.addRoleContent(ctx, content, openai.ChatMessageRoleSystem)
 }
 
-func (c *ChatContextManager) AddUserRoleContent(ctx context.Context, content string) error {
-	return c.addRoleContent(ctx, content, openai.ChatMessageRoleUser)
+func (c *ChatContextManager) AddUserRoleContent(ctx context.Context, sender string, content string) error {
+	key := c.generateMessageCacheKey()
+	message := openai.ChatCompletionMessage{
+		Name:    sender,
+		Role:    openai.ChatMessageRoleUser,
+		Content: content,
+	}
+	marshal, err := json.Marshal(message)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+	err = c.cache.SetValue(ctx, key, marshal)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (c *ChatContextManager) AddAssistantRoleContent(ctx context.Context, content string, toolCalls []openai.ToolCall) error {
@@ -106,7 +121,7 @@ func (c *ChatContextManager) GetAllRoleContent(ctx context.Context) ([]openai.Ch
 	for i := 0; i < c.currentMessageCount; i++ {
 		messageContent, err := c.cache.GetValue(ctx, fmt.Sprintf("message:%d", i))
 		if err != nil {
-			fmt.Printf("%+v\n", errors.Wrapf(err, "get message cache error"))
+			log.Printf("%+v\n", errors.Wrapf(err, "get message cache error"))
 			continue
 		}
 		if messageContent == nil {
@@ -115,7 +130,7 @@ func (c *ChatContextManager) GetAllRoleContent(ctx context.Context) ([]openai.Ch
 		var message openai.ChatCompletionMessage
 		err = json.Unmarshal(messageContent, &message)
 		if err != nil {
-			fmt.Printf("%+v\n", errors.Wrapf(err, "unmarshal message cache error"))
+			log.Printf("%+v\n", errors.Wrapf(err, "unmarshal message cache error"))
 			continue
 		}
 		result = append(result, message)
