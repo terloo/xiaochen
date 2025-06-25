@@ -92,7 +92,7 @@ func PersistentLikeMusic(ctx context.Context) {
 					log.Printf("get db data error: %+v\n", err)
 				}
 				if record != nil && (record.Downloaded || record.DownloadRetryCount >= 10) {
-					log.Printf("music [%v %s] has downloaded or retch max retry count\n", music.Artist, music.Name)
+					// log.Printf("music [%v %s] has downloaded or retch max retry count\n", music.Artist, music.Name)
 					continue
 				}
 
