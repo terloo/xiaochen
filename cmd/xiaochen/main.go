@@ -12,7 +12,6 @@ import (
 	"github.com/terloo/xiaochen/service/message"
 	"github.com/terloo/xiaochen/service/music"
 	"github.com/terloo/xiaochen/service/notify/period"
-	"github.com/terloo/xiaochen/thirdparty/wxbot"
 )
 
 func init() {
@@ -23,12 +22,6 @@ func main() {
 
 	wg := sync.WaitGroup{}
 	ctx, cancel := context.WithCancel(context.Background())
-
-	// 校验登录状态
-	wxid, err := wxbot.GetWxid(ctx)
-	if err != nil || wxid == "" {
-		log.Fatal(err)
-	}
 
 	go func() {
 		wg.Add(1)

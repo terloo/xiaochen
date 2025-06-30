@@ -21,6 +21,17 @@ func KeepAlive(ctx context.Context) {
 	_ = SendMsg(ctx, "ping", family.TestChatroomWxid)
 }
 
+func CheckAlive(ctx context.Context) (bool, error) {
+	contacts, err := GetContacts(ctx)
+	if err != nil {
+		return false, err
+	}
+	if len(contacts.Data.Contacts) == 0 {
+		return false, nil
+	}
+	return true, nil
+}
+
 func GetWxid(ctx context.Context) (string, error) {
 	b, err := client.HttpGet(ctx, host+"checklogin", nil, nil)
 	if err != nil {

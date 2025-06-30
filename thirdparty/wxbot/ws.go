@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/gorilla/websocket"
 
@@ -14,65 +15,69 @@ import (
 func StartReceiveMessage(ctx context.Context) <-chan FormattedMessage {
 	wxBotHost := config.NewLoader("main.wxBotHost").Get()
 	url := fmt.Sprintf("ws://%s/ws/generalMsg", wxBotHost)
-	ws, _, err := websocket.DefaultDialer.DialContext(ctx, url, nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Println("start receive message")
-
+	retryDuration := 5 * time.Second
 	resultChan := make(chan FormattedMessage, 10)
 
-	go func() {
+	var ws *websocket.Conn
+	go func(ctx context.Context) {
+		// 注册退出逻辑
 		<-ctx.Done()
 		log.Println("close websocket connection...")
-		_ = ws.Close()
+		if ws != nil {
+			_ = ws.Close()
+		}
 		close(resultChan)
-	}()
+	}(ctx)
 
-	go func() {
+	go func(ctx context.Context) {
 		for {
 			if err := ctx.Err(); err != nil {
-				log.Println("stop receive message")
+				log.Printf("stop receive message: %+v\n", err)
 				return
 			}
 
-			func() {
+			var err error
+			ws, _, err = websocket.DefaultDialer.DialContext(ctx, url, nil)
+			if err != nil {
+				log.Printf("dial to wxbot, try to reconnect after %s, error: %+v\n", retryDuration, err)
+				<-time.After(retryDuration)
+				continue
+			}
+			log.Println("dial to wxbot success")
+
+			func(ctx context.Context) {
 				defer func() {
 					if r := recover(); r != nil {
 						log.Println("websocket panic: ", r)
-						// panic后重新建立连接
-						ws, _, err = websocket.DefaultDialer.DialContext(ctx, url, nil)
-						if err != nil {
-							log.Fatalf("reconnect websocket error: %+v", err)
-						}
-						log.Println("reconnect websocket")
 					}
 				}()
 
-				message, err := ReadMessage(ctx, ws)
-				if err != nil {
-					log.Printf("read message error: %+v\n", err)
-					return
-				}
-				for _, data := range message.Data {
-					if err := ctx.Err(); err != nil {
-						return
-					}
-					formattedMessage, err := FormatMessage(data)
+				log.Println("start receive message")
+				for {
+					message, err := ReadMessage(ctx, ws)
 					if err != nil {
-						log.Printf("format message error: %+v\n", err)
+						log.Printf("read message error: %+v\n", err)
 						return
 					}
-					if formattedMessage.Self && !formattedMessage.At {
-						// 暂不处理自己发送的消息
-						return
+					for _, data := range message.Data {
+						if err := ctx.Err(); err != nil {
+							return
+						}
+						formattedMessage, err := FormatMessage(data)
+						if err != nil {
+							log.Printf("format message error: %+v\n", err)
+							continue
+						}
+						if formattedMessage.Self && !formattedMessage.At {
+							// 暂不处理自己发送的消息
+							continue
+						}
+						resultChan <- formattedMessage
 					}
-					resultChan <- formattedMessage
 				}
-				return
-			}()
+			}(ctx)
 		}
-	}()
+	}(ctx)
 
 	return resultChan
 }

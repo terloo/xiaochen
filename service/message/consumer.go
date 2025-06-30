@@ -18,7 +18,11 @@ func StartConsumer(ctx context.Context) {
 		select {
 		case <-ctx.Done():
 			return
-		case message := <-messageCh:
+		case message, ok := <-messageCh:
+			if !ok {
+				log.Println("wxbot consumer has closed")
+				return
+			}
 			for _, h := range handlers {
 				if h.Support(message) {
 					err := h.Handle(ctx, message)

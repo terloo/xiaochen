@@ -18,6 +18,21 @@ func StartPeriodNotifier(ctx context.Context) {
 		cron.WithSeconds(),
 		cron.WithLogger(printfLogger),
 		cron.WithChain(cron.Recover(printfLogger)),
+		cron.WithChain(func(job cron.Job) cron.Job {
+			return cron.FuncJob(func() {
+				// 检查微信登录状态
+				ok, err := wxbot.CheckAlive(ctx)
+				if err != nil {
+					log.Printf("check wxbot login error: %+v\n", err)
+					return
+				}
+				if !ok {
+					log.Println("wxbot has offline, check it")
+					return
+				}
+				job.Run()
+			})
+		}),
 	)
 
 	c.AddFunc("0 0 */2 * * *", func() {

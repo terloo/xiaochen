@@ -25,16 +25,6 @@ const developerContent = `
 [你]: 家庭成员B你说的对，是周杰伦唱的
 `
 
-var selfWxid string
-
-func init() {
-	wxid, err := wxbot.GetWxid(context.Background())
-	if err != nil {
-		log.Fatal(err)
-	}
-	selfWxid = wxid
-}
-
 type GPTHandler struct {
 	CommonHandler
 	sessionIds     map[string]string
@@ -98,6 +88,11 @@ func (c *GPTHandler) Handle(ctx context.Context, msg wxbot.FormattedMessage) err
 		return err
 	}
 	err = manager.AddUserRoleContent(ctx, senderName, msg.Content)
+	if err != nil {
+		return err
+	}
+
+	selfWxid, err := wxbot.GetWxid(context.Background())
 	if err != nil {
 		return err
 	}
