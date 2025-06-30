@@ -1,5 +1,10 @@
 package util
 
+import (
+	"path/filepath"
+	"strings"
+)
+
 var LunarMonthNameToMonth = map[string]int{
 	"正":  1,
 	"二":  2,
@@ -34,4 +39,23 @@ func Contains(elems []string, v string) bool {
 		}
 	}
 	return false
+}
+
+func CleanFilename(filename string) string {
+	replacer := strings.NewReplacer(
+		"/", "_",
+		"\\", "_",
+		"*", "_",
+		"?", "_",
+		"\"", "_",
+		"'", "_",
+		"<", "_",
+		">", "_",
+		"|", "_",
+		":", "_",
+	)
+	cleaned := replacer.Replace(filename)
+
+	// 防止路径注入
+	return filepath.Base(cleaned)
 }

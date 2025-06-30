@@ -19,6 +19,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/terloo/xiaochen/client"
 	"github.com/terloo/xiaochen/config"
+	"github.com/terloo/xiaochen/util"
 )
 
 var tickerDuration = config.NewLoader("thirdparty.gd.httpDuration")
@@ -63,7 +64,7 @@ func GetMusic(ctx context.Context, id string, source string, name string, artist
 		if err != nil {
 			return nil, err
 		}
-		if len(musics) == 1 {
+		if len(musics) == 0 {
 			break
 		}
 		for _, music := range musics {
@@ -126,7 +127,7 @@ func PersistentMusic(ctx context.Context, music Music) (string, string, error) {
 	}
 
 	// 保存修改后的歌曲
-	musicName := fmt.Sprintf("%s - %s.%s", music.Artist[0], music.Name, extension)
+	musicName := util.CleanFilename(fmt.Sprintf("%s - %s.%s", music.Artist[0], music.Name, extension))
 	musicPath := filepath.Join(savePath, musicName)
 	file, err := os.OpenFile(musicPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
