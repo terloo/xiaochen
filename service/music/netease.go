@@ -158,7 +158,7 @@ func persistentLikeMusicInternal(ctx context.Context, music netease.Music) (*gd.
 	}
 
 	log.Printf("seeking music [%v %s] gd info", music.Artist, music.Name)
-	gdMusic, err := gd.GetMusic(ctx, strconv.Itoa(music.Id), models.MusicSourceNetease.String(), music.Name, music.Artist, music.Album)
+	gdMusic, err := gd.GetMusic(ctx, strconv.Itoa(music.Id), models.MusicSourceNetease.String(), music.Name, music.Artist, "")
 	if err != nil {
 		log.Printf("get dg music info error: %+v\n", err)
 		return nil, "", "", err
