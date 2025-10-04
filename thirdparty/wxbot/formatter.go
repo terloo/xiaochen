@@ -85,9 +85,10 @@ func FormatMessage(msg WxGeneralMsgData) (FormattedMessage, error) {
 		}
 		result.Content = strings.Replace(result.Content, " ", " ", -1)
 	}
-	if strings.HasPrefix(result.Content, "/") {
+	conTentWithoutAt := strings.TrimPrefix(result.Content, "@xiaochen ")
+	if strings.HasPrefix(conTentWithoutAt, "/") {
 		result.Command = true
-		split := strings.Split(result.Content, " ")
+		split := strings.Split(conTentWithoutAt, " ")
 		if len(split) == 0 {
 			result.Command = false
 		} else {
