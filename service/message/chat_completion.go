@@ -3,6 +3,7 @@ package message
 import (
 	"context"
 	"log"
+	"time"
 
 	gomcp "github.com/mark3labs/mcp-go/mcp"
 	"github.com/pkg/errors"
@@ -34,7 +35,9 @@ type GPTHandler struct {
 
 func NewGPTHandler(c CommonHandler) *GPTHandler {
 	clientManager := mcp.NewClientManger()
-	err := clientManager.InitializeAll(context.TODO())
+	ctx, cancelFunc := context.WithTimeoutCause(context.Background(), 20*time.Second, errors.New("new gpt handler timeout"))
+	defer cancelFunc()
+	err := clientManager.InitializeAll(ctx)
 	if err != nil {
 		log.Fatal(errors.WithStack(err))
 	}
@@ -92,7 +95,7 @@ func (c *GPTHandler) Handle(ctx context.Context, msg wxbot.FormattedMessage) err
 		return err
 	}
 
-	selfWxid, err := wxbot.GetWxid(context.Background())
+	selfWxid, err := wxbot.GetWxid(ctx)
 	if err != nil {
 		return err
 	}
