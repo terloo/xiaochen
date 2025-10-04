@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"log"
+	"time"
 
 	"github.com/mark3labs/mcp-go/client"
 	"github.com/mark3labs/mcp-go/mcp"
@@ -33,22 +34,26 @@ func (m *ClientManager) InitializeAll(ctx context.Context) error {
 		return err
 	}
 
+	subCtx, cancelFunc := context.WithTimeoutCause(ctx, 3*time.Second, errors.New("init mcp server timeout"))
+	defer cancelFunc()
 	c1, err := client.NewStdioMCPClient("npx", []string{}, "-y", "howtocook-mcp")
 	if err != nil {
 		return errors.Wrapf(err, "create mcp client error")
 	}
-	c1Resp, err := c1.Initialize(ctx, mcp.InitializeRequest{})
+	c1Resp, err := c1.Initialize(subCtx, mcp.InitializeRequest{})
 	if err != nil {
 		return errors.Wrapf(err, "initialize mcp client error")
 	}
 	log.Printf("initialize mcp server success, name: %s, version: %s \n", c1Resp.ServerInfo.Name, c1Resp.ServerInfo.Version)
 	m.clientMap[c1Resp.ServerInfo.Name] = c1
 
+	subCtx, cancelFunc = context.WithTimeoutCause(ctx, 3*time.Second, errors.New("init mcp server timeout"))
+	defer cancelFunc()
 	c2, err := client.NewStdioMCPClient("xiaochen_mcp", []string{}, "")
 	if err != nil {
 		return errors.Wrapf(err, "create mcp client error")
 	}
-	c2Resp, err := c2.Initialize(ctx, mcp.InitializeRequest{})
+	c2Resp, err := c2.Initialize(subCtx, mcp.InitializeRequest{})
 	if err != nil {
 		return errors.Wrapf(err, "initialize mcp client error")
 	}
