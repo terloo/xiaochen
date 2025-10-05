@@ -51,6 +51,7 @@ func HttpGet(ctx context.Context, url string, header http.Header, param neturl.V
 	if resp.StatusCode/100 != 2 {
 		return nil, errors.Errorf("http status code not ok: %d, respBody: %s", resp.StatusCode, string(respBody))
 	}
+	log.Printf("http GET request, url: %s, resp: %s\n", _url.String(), string(respBody))
 	return respBody, nil
 }
 
@@ -98,5 +99,6 @@ func HttpPost(ctx context.Context, url string, header http.Header, param neturl.
 	if resp.StatusCode/100 != 2 {
 		return nil, errors.Errorf("http status code not ok: %d, body: %s", resp.StatusCode, string(respBody))
 	}
+	log.Printf("http POST request, url: %s, req: %+v, resp: %s\n", _url.String(), body, string(respBody))
 	return respBody, nil
 }
