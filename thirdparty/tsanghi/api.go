@@ -3,10 +3,10 @@ package tsanghi
 import (
 	"context"
 	"encoding/json"
-	"log"
 	"net/url"
 	"time"
 
+	"github.com/pkg/errors"
 	"github.com/terloo/xiaochen/client"
 	"github.com/terloo/xiaochen/util"
 )
@@ -28,7 +28,9 @@ func GetTodayTicker(ctx context.Context, code string) (*TickerData, error) {
 		return nil, err
 	}
 
-	log.Println(ticker)
+	if len(ticker.Data) < 1 {
+		return nil, errors.New("no ticket data")
+	}
 	data := ticker.Data[0]
 	return &data, nil
 }

@@ -25,7 +25,7 @@ func (t *TickerNotifier) Notify(ctx context.Context, notified ...string) {
 	for _, ticker := range t.Tickers {
 		todayTickerData, err := tsanghi.GetTodayTicker(ctx, ticker)
 		if err != nil {
-			log.Println(err)
+			log.Printf("get today ticket error: %+v\n", err)
 			return
 		}
 		wxMsg += fmt.Sprintf("\t代码：%s\n", ticker)
