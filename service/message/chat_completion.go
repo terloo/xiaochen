@@ -95,7 +95,7 @@ func (c *GPTHandler) Handle(ctx context.Context, msg wxbot.FormattedMessage) err
 		return err
 	}
 
-	selfWxid, err := wxbot.GetWxid(ctx)
+	selfWxid, err := wxbot.GetWxidWithCache(ctx)
 	if err != nil {
 		return err
 	}

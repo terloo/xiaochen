@@ -50,6 +50,19 @@ func GetWxid(ctx context.Context) (string, error) {
 	return loginState.Data.Wxid, nil
 }
 
+var selfWxid string
+
+func GetWxidWithCache(ctx context.Context) (string, error) {
+	if selfWxid == "" {
+		wxid, err := GetWxid(ctx)
+		if err != nil {
+			return "", err
+		}
+		selfWxid = wxid
+	}
+	return selfWxid, nil
+}
+
 func GetContacts(ctx context.Context) (*Contacts, error) {
 	b, err := client.HttpGet(ctx, host+"dbcontacts", nil, nil)
 	if err != nil {
