@@ -19,6 +19,7 @@ require (
 	github.com/spf13/viper v1.18.2
 	github.com/terloo/almanac v0.0.0-20240515165319-342b420d4804
 	golang.org/x/exp v0.0.0-20230905200255-921286631fa9
+	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 	gorm.io/driver/sqlite v1.5.7
 	gorm.io/gorm v1.30.0
 )

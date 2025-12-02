@@ -8,6 +8,8 @@ import (
 	"sync"
 	"syscall"
 
+	"gopkg.in/natefinch/lumberjack.v2"
+
 	_ "github.com/terloo/xiaochen/config"
 	"github.com/terloo/xiaochen/service/message"
 	"github.com/terloo/xiaochen/service/music"
@@ -49,6 +51,13 @@ func main() {
 }
 
 func initLogger() {
+	// 限制日志大小
+	log.SetOutput(&lumberjack.Logger{
+		Filename:   "log/xiaochen.log",
+		LocalTime:  true,
+		MaxBackups: 0,
+		MaxAge:     0,
+	})
 	log.SetFlags(log.LstdFlags | log.Llongfile | log.Lmicroseconds)
 	log.SetPrefix("[xiaochen] ")
 }
